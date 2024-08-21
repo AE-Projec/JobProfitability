@@ -1,0 +1,104 @@
+﻿@page "/"
+@model Job_Rentabilitätsrechner.Pages.CalculateModel
+
+<h2>Jobwechsel-Rechner</h2>
+
+    <form method="post">
+        <div class="form-group">
+            <label for="oldSalary">Altes Gehalt (Brutto/Jahr):</label>
+            <input type="number" class="form-control" id="oldSalary" name="oldSalary"
+                   asp-for="OldSalary" required>
+        </div>
+
+        <div class="form-group">
+            <label for="newSalary">Neues Gehalt (Brutto/Jahr):</label>
+            <input type="number" class="form-control" id="newSalary" name="newSalary"
+                   asp-for="NewSalary" required>
+        </div>
+
+        <div class="form-group">
+            <label for="commuteDistance">Pendeldistanz hin und zurück pro Tag (einfach in km):</label>
+            <input type="number" class="form-control" id="commuteDistance" name="commuteDistance"
+                   asp-for="CommuteDistance" required>
+        </div>
+
+        <div class="form-group">
+            <label for="fuelType"> Kraftstofftyp:</label>
+            <select class="form-control" id="fuelType" name="fuelType" asp-for="FuelType"
+                onchange="updateFuelPrice()" required>
+                <option value="diesel">Diesel</option>
+                <option value="superE10"> Super E10</option>
+                <option value="superE5"> Super E5</option>
+                <option value="superPlus"> SuperPlus</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="fuelConsumption"> Verbrauch (Liter/100km):</label>
+            <input type="number" class="form-control" id="fuelConsumption" name="fuelConsumption"
+                   asp-for="FuelConsumption" step="0.1" required />
+        </div>
+
+        <div class="form-group" id="fuelPriceField" style="display:none;">
+            <label id="fuelPriceLabel" for="fuelPriceLabel">Preis für Kraftstoff (€/Liter):</label>
+            <input type="text" class="form-control" id="fuelPrice" name="fuelPrice" asp-for="FuelPrice">
+        </div>
+
+        <div class="form-group">
+            <label for="taxClass">Steuerklasse:</label>
+            <select class="form-control" id="taxClass" name="taxClass" asp-for="TaxClass">
+                <option value="1"> I </option>
+                <option value="2"> II </option>
+                <option value="3"> III </option>
+                <option value="4"> IV </option>
+                <option value="5"> V </option>
+                <option value="6"> VI </option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="churchTax">Kirchensteuerpflichtig: </label>
+            <input type="checkbox" id="churchTax" name="churchTax" asp-for="ChurchTax" />
+        </div>
+
+        <button type="submit" class="btn btn-primary">Berechnen</button>
+    </form>
+
+
+<script>
+    function updateFuelPrice() {
+        var fuelType = document.getElementById("fuelType").value;
+        var fuelPriceField = document.getElementById("fuelPriceField");
+        var fuelPriceLabel = document.getElementById("fuelPriceLabel");
+        var fuelInput = document.getElementById("fuelPrice");
+
+
+        var fuelData = {
+            "diesel": { label: "Durchschnittlicher Preis für Diesel (€/Liter):", value: "1.50" },
+            "superE10": { label: "Durchschnittlicher Preis für Super E10 (€/Liter):", value: "1.65" },
+            "superE5": { label: "Durchschnittlicher Preis für Super E5 (€/Liter):", value: "1.70" },
+            "superPlus": { label: "Durchschnittlicher Preis für Super Plus (€/Liter):", value: "1.81" },
+        };
+
+        if (fuelType in fuelData) {
+            fuelPriceField.style.display = "block";
+            fuelPriceLabel.textContent = fuelData[fuelType].label;
+            fuelInput.value = fuelData[fuelType].value;
+        } else {
+            fuelPriceField.style.display = "none";
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        updateFuelPrice();
+    });
+</script>
+
+
+@if (Model.IsCalculated)
+{
+    <h3> Ergebnis: </h3>
+    <p> Monatliche Kosten für das Pendeln: @Model.CommuteCost.ToString("F2") €</p>
+    <p> Jährliche Gehaltsdifferenz: @Model.SalaryDifference.ToString("F2") €</p>
+    <p>Dein Jahresgehalt wird  @Model.AdjustedSalary.ToString("F2") € brutto sein.   </p>
+}
