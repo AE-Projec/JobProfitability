@@ -1,104 +1,193 @@
 ﻿@page "/"
 @model Job_Rentabilitätsrechner.Pages.CalculateModel
 
-<h2>Jobwechsel-Rechner</h2>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="~/css/style.css" />
 
-    <form method="post">
-        <div class="form-group">
-            <label for="oldSalary">Altes Gehalt (Brutto/Jahr):</label>
-            <input type="number" class="form-control" id="oldSalary" name="oldSalary"
-                   asp-for="OldSalary" required>
-        </div>
+    <title>Jobwechsel-Rechner</title>
+</head>
 
-        <div class="form-group">
-            <label for="newSalary">Neues Gehalt (Brutto/Jahr):</label>
-            <input type="number" class="form-control" id="newSalary" name="newSalary"
-                   asp-for="NewSalary" required>
-        </div>
+<body>
+    <div class="container form-container">
+        <h2 class="form-header">Jobwechsel-Rechner</h2>
 
-        <div class="form-group">
-            <label for="commuteDistance">Pendeldistanz hin und zurück pro Tag (einfach in km):</label>
-            <input type="number" class="form-control" id="commuteDistance" name="commuteDistance"
-                   asp-for="CommuteDistance" required>
-        </div>
+        <form method="post" id="salaryForm">
+            <div class="form-group">
+                <label for="grossSalary">Altes Gehalt (Brutto/Jahr):</label>
+                <input type="number" class="form-control" id="grossSalary" name="grossSalary"
+                       oninput="calculateNetSalary()" asp-for="GrossSalary" required>
+                <small class="form-text text-muted">
+                    Geschätztes Netto: <span id="netSalaryNew">@Model.NetSalary.ToString("F2")</span>
+                </small>
+            </div>
 
-        <div class="form-group">
-            <label for="fuelType"> Kraftstofftyp:</label>
-            <select class="form-control" id="fuelType" name="fuelType" asp-for="FuelType"
-                onchange="updateFuelPrice()" required>
-                <option value="diesel">Diesel</option>
-                <option value="superE10"> Super E10</option>
-                <option value="superE5"> Super E5</option>
-                <option value="superPlus"> SuperPlus</option>
-            </select>
-        </div>
+            <div class="form-group">
+                <label for="newGrossSalary">Neues Gehalt (Brutto/Jahr):</label>
+                <input type="number" class="form-control" id="newGrossSalary" name="newGrossSalary"
+                       oninput="calculateNetSalary()" asp-for="NewGrossSalary" required>
+                <small class="form-text text-muted">
+                    Geschätztes Netto: <span id="newNetSalaryNew">@Model.NewNetSalary.ToString("F2")</span>
+                </small>
+            </div>
 
-        <div class="form-group">
-            <label for="fuelConsumption"> Verbrauch (Liter/100km):</label>
-            <input type="number" class="form-control" id="fuelConsumption" name="fuelConsumption"
-                   asp-for="FuelConsumption" step="0.1" required />
-        </div>
+            <div class="form-group">
+                <label for="commuteDistance">Pendeldistanz hin und zurück pro Tag (einfach in km):</label>
+                <input type="number" class="form-control" id="commuteDistance" name="commuteDistance"
+                       asp-for="CommuteDistance" required>
+            </div>
 
-        <div class="form-group" id="fuelPriceField" style="display:none;">
-            <label id="fuelPriceLabel" for="fuelPriceLabel">Preis für Kraftstoff (€/Liter):</label>
-            <input type="text" class="form-control" id="fuelPrice" name="fuelPrice" asp-for="FuelPrice">
-        </div>
+            <div class="form-group">
+                <label for="fuelType">Kraftstofftyp:</label>
+                <select class="form-control" id="fuelType" name="fuelType" asp-for="FuelType"
+                        onchange="updateFuelPrice()" required>
+                    <option value="diesel">Diesel</option>
+                    <option value="superE10">Super E10</option>
+                    <option value="superE5">Super E5</option>
+                    <option value="superPlus">SuperPlus</option>
+                    <option value="electricity">Strom</option>
+                </select>
+            </div>
 
-        <div class="form-group">
-            <label for="taxClass">Steuerklasse:</label>
-            <select class="form-control" id="taxClass" name="taxClass" asp-for="TaxClass">
-                <option value="1"> I </option>
-                <option value="2"> II </option>
-                <option value="3"> III </option>
-                <option value="4"> IV </option>
-                <option value="5"> V </option>
-                <option value="6"> VI </option>
-            </select>
-        </div>
+            <div class="form-group">
+                <label for="fuelConsumption">Verbrauch (Liter/100km):</label>
+                <input type="number" class="form-control" id="fuelConsumption" name="fuelConsumption"
+                       asp-for="FuelConsumption" step="0.1" required />
+            </div>
 
-        <div class="form-group">
-            <label for="churchTax">Kirchensteuerpflichtig: </label>
-            <input type="checkbox" id="churchTax" name="churchTax" asp-for="ChurchTax" />
-        </div>
+            <div class="form-group" id="fuelPriceField" style="display:none;">
+                <label id="fuelPriceLabel" for="fuelPriceLabel">Preis für Kraftstoff (€/Liter):</label>
+                <input type="text" class="form-control" id="fuelPrice" name="fuelPrice" asp-for="FuelPrice">
+            </div>
 
-        <button type="submit" class="btn btn-primary">Berechnen</button>
-    </form>
+            <div class="form-group">
+                <label for="taxClass">Steuerklasse:</label>
+                <select class="form-control" id="taxClass" name="taxClass" asp-for="TaxClass">
+                    <option value="1">I</option>
+                    <option value="2">II</option>
+                    <option value="3">III</option>
+                    <option value="4">IV</option>
+                    <option value="5">V</option>
+                    <option value="6">VI</option>
+                </select>
+            </div>
 
+            <div class="form-group">
+                <label for="churchTax">Sind Sie Kirchensteuerpflichtig?</label>
+                <input type="checkbox" id="churchTax" name="churchTax" asp-for="ChurchTax" onchange="calculateNetSalary()" />
+            </div>
 
-<script>
-    function updateFuelPrice() {
-        var fuelType = document.getElementById("fuelType").value;
-        var fuelPriceField = document.getElementById("fuelPriceField");
-        var fuelPriceLabel = document.getElementById("fuelPriceLabel");
-        var fuelInput = document.getElementById("fuelPrice");
+            <div class="form-group" id="soliContainer" style="display:none;">
+                <label for="includeSoli">Solidaritätszuschlag berechnen:</label>
+                <input type="checkbox" id="includeSoli" name="includeSoli" />
+            </div>
 
+            <div class="form-group">
+                <label for="includeWearAndTear">Fahrzeugabnutzung einbeziehen:</label>
+                <input type="checkbox" id="includeWearAndTear" name="includeWearAndTear" asp-for="IncludeWearAndTear" />
+            </div>
 
-        var fuelData = {
-            "diesel": { label: "Durchschnittlicher Preis für Diesel (€/Liter):", value: "1.50" },
-            "superE10": { label: "Durchschnittlicher Preis für Super E10 (€/Liter):", value: "1.65" },
-            "superE5": { label: "Durchschnittlicher Preis für Super E5 (€/Liter):", value: "1.70" },
-            "superPlus": { label: "Durchschnittlicher Preis für Super Plus (€/Liter):", value: "1.81" },
-        };
+            <div class="form-group" id="wearLevelContainer" style="display:none;">
+                <label for="wearLevel">Fahrzeugabnutzung: </label>
+                <input type="range" class="form-control-range" id="wearLevel" name="wearLevel" asp-for="WearLevel" min="1" max="3" step="1"disabled />
+                <small class="form-text-muted">
+                    1 = Niedrig (Neues Fahrzeug), 3 = Hoch (älteres Fahrzeug)
+                </small>
+            </div>
 
-        if (fuelType in fuelData) {
-            fuelPriceField.style.display = "block";
-            fuelPriceLabel.textContent = fuelData[fuelType].label;
-            fuelInput.value = fuelData[fuelType].value;
-        } else {
-            fuelPriceField.style.display = "none";
-        }
-    }
+            <button type="submit" class="btn btn-primary btn-block mt-4">Berechnen</button>
+        </form>
+    </div>
 
-    document.addEventListener("DOMContentLoaded", function () {
-        updateFuelPrice();
-    });
-</script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js"></script>
+</body>
+</html>
+
 
 
 @if (Model.IsCalculated)
 {
-    <h3> Ergebnis: </h3>
-    <p> Monatliche Kosten für das Pendeln: @Model.CommuteCost.ToString("F2") €</p>
-    <p> Jährliche Gehaltsdifferenz: @Model.SalaryDifference.ToString("F2") €</p>
-    <p>Dein Jahresgehalt wird  @Model.AdjustedSalary.ToString("F2") € brutto sein.   </p>
+
+    <!-- <table class="table">
+         <thead>
+             <tr>
+                 <th scope="col">Beschreibung</th>
+                 <th scope="col">Betrag</th>
+             </tr>
+         </thead>
+         <tbody>
+             <tr>
+                 <td>Monatliche Kosten für das Pendeln</td>
+                 <td>@Model.CommuteCost.ToString("F2") € </td>
+             </tr>
+             <tr>
+                 <td>Jährliche Gehaltsdifferenz</td>
+                 <td>@Model.SalaryDifference.ToString("F2") € Brutto</td>
+             </tr>
+             <tr>
+                 <td>Dein Jahresgehalt</td>
+                 <td>@Model.AdjustedSalary.ToString("F2") € Brutto</td>
+             </tr>
+             <tr>
+                 <td>Dein Nettogehalt</td>
+                 <td>@Model.NewNetSalary.ToString("F2") € Netto</td>
+             </tr>
+         </tbody>
+     </table>
+      -->
+    <div class="container form-container">
+        <h2 class="form-header">Jobwechsel-Rechner</h2>
+
+        <form method="post" id="salaryForm">
+            <!-- Form content as before -->
+        </form>
+
+        <!-- Tabelle zur Ausgabe der Ergebnisse -->
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">Beschreibung</th>
+                    <th scope="col">Betrag</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Monatliche Kosten für das Pendeln</td>
+                    <td>@Model.CommuteCost.ToString("F2") €</td>
+                </tr>
+            @if (Model.IncludeWearAndTear)
+                {
+                    <tr>
+                        <td>Monatliche Abnutzungskosten</td>
+                        <!-- <td>@Model.TotalCost.ToString("F2") €</td>-->
+                        <td>@Model.MonthlyWearAndTear.ToString("F2") €</td>
+                    </tr>
+                    <tr>
+                        <td> Jährliche Pendel- und Abnutzungskosten</td>
+                        <td> @Model.TotalCostWearAnTear.ToString("F2") €</td>
+                    </tr>
+                }
+                
+                <tr>
+                    <td>Jährliche Gehaltsdifferenz</td>
+                    <td>@Model.SalaryDifference.ToString("F2") € Brutto</td>
+                </tr>
+                <tr>
+                    <td>Dein Jahresgehalt</td>
+                    <td>@Model.AdjustedSalary.ToString("F2") € Brutto</td>
+                </tr>
+                <tr>
+                    <td>Dein Nettogehalt</td>
+                    <td>@Model.AdjustedNetSalary.ToString("F2") € Netto</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
 }

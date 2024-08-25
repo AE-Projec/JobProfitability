@@ -7,4 +7,8 @@
     <RootNamespace>Job_Rentabilitätsrechner</RootNamespace>
   </PropertyGroup>
 
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="wwwroot\css\style.css" />
+  </ItemGroup>
+
 </Project>
