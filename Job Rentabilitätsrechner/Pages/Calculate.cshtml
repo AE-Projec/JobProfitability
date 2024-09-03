@@ -1,44 +1,70 @@
-﻿@page "/"
+﻿@page "/Calculate"
 @model Job_Rentabilitätsrechner.Pages.CalculateModel
-
+@{
+    Layout = "~/Pages/Shared/_Layout.cshtml";
+}
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="~/css/style.css" />
-
     <title>Jobwechsel-Rechner</title>
 </head>
 
 <body>
     <div class="container form-container">
+
         <h2 class="form-header">Jobwechsel-Rechner</h2>
 
         <form method="post" id="salaryForm">
             <div class="form-group">
+                <label>Externes Netto-Gehalt verwenden?</label><br>
+                <label class="radio-inline">
+                    <input type="radio" id="falseRadio" name="useExternalNetto" value="false" @(!Model.UseExternalNetto ? "checked" : "")> Nein
+                </label>
+                <label class="radio-inline">
+                    <input type="radio" id="truthRadio" name="useExternalNetto" value="true" @(Model.UseExternalNetto ? "checked" : "")> Ja
+                </label>
+            </div>
+
+
+            <div class="form-group" id="externalNettoInput" style="display:none;">
+                <label for="externalNetto">Externes Netto Jahresgehalt (€):</label>
+                <input type="number" class="form-control" step="0.01"
+                       placeholder="0" onfocus="clearPlaceholder(this)" asp-for="ExternNetSalary">
+
+            </div>
+
+
+
+
+            <div class="form-group" id="oldBruttoInput">
                 <label for="grossSalary">Altes Gehalt (Brutto/Jahr):</label>
                 <input type="number" class="form-control" id="grossSalary" name="grossSalary"
-                       oninput="calculateNetSalary()" asp-for="GrossSalary" required>
+                       oninput="calculateNetSalary('old')" asp-for="GrossSalary" placeholder="0.00" onfocus="clearPlaceholder(this)" required>
                 <small class="form-text text-muted">
                     Geschätztes Netto: <span id="netSalaryNew">@Model.NetSalary.ToString("F2")</span>
                 </small>
             </div>
 
-            <div class="form-group">
+            <div class="form-group" id="newBruttoInput">
                 <label for="newGrossSalary">Neues Gehalt (Brutto/Jahr):</label>
                 <input type="number" class="form-control" id="newGrossSalary" name="newGrossSalary"
-                       oninput="calculateNetSalary()" asp-for="NewGrossSalary" required>
+                       oninput="calculateNetSalary('new')" asp-for="NewGrossSalary" placeholder="0.00" onfocus="clearPlaceholder(this)" required>
                 <small class="form-text text-muted">
                     Geschätztes Netto: <span id="newNetSalaryNew">@Model.NewNetSalary.ToString("F2")</span>
                 </small>
             </div>
 
             <div class="form-group">
+                <label for="averageCommuteDays">Anzahl der Pendeltage pro Woche:</label>
+                <input type="number" class="form-control" id="averageCommuteDays" name="averageCommuteDays" min="1" max="7" placeholder="0" onfocus="clearPlaceholder(this)" asp-for="AverageCommuteDays" required>
+                <small class="form-text text-muted">Geben Sie die Anzahl der Tage an, die Sie im durchschnitt pro Woche ins Büro pendeln.</small>
+            </div>
+
+
+            <div class="form-group">
                 <label for="commuteDistance">Pendeldistanz hin und zurück pro Tag (einfach in km):</label>
                 <input type="number" class="form-control" id="commuteDistance" name="commuteDistance"
-                       asp-for="CommuteDistance" required>
+                       asp-for="CommuteDistance" placeholder="0" onfocus="clearPlaceholder(this)" required>
             </div>
 
             <div class="form-group">
@@ -53,18 +79,44 @@
                 </select>
             </div>
 
+            <div class="form-group" id="transmissionTypeField">
+                <label for="transmissionType">Getriebeart: </label>
+                <select class="form-control" id="transmissionType" name="transmissionType" asp-for="TransmissionType" required>
+                    <option value="manual">Schaltgetriebe</option>
+                    <option value="automatic">Automatikgetriebe</option>
+                </select>
+            </div>
+
+            <div class="form-group" id="gearCountField" style="display:none;">
+                <label for="gearCount">
+                    Anzahl der Gänge (nur bei Automatik):
+                    <i class="fas fa-info-circle" onclick="showInfoModal('infoModalGearCount')"></i>
+                </label>
+                <input type="number" class="form-control" id="gearCount" name="gearCount" asp-for="GearCount" min="1" step="1" />
+            </div>
+
+            <!-- Modal (aus dem Formular heraus verschoben) -->
+            <div id="infoModalGearCount" style="display:none;">
+                <div class="modal-content">
+                    <span class="close" onclick="closeInfoModal('infoModalGearCount')">&times;</span>
+                    <p>
+                        Die Berechnung des Kraftstoffverbrauchs basiert auf Schätzungen. Automatikgetriebe verbrauchen im Durchschnitt etwa 10% mehr Kraftstoff. Fahrzeuge mit mehr als 5 Gängen können etwa 5% sparsamer sein. Diese Werte sind Richtwerte und können je nach Fahrstil und Fahrzeug variieren.
+                    </p>
+                </div>
+            </div>
+
             <div class="form-group">
-                <label for="fuelConsumption">Verbrauch (Liter/100km):</label>
+                <label id="fuelConsumptionLabel" for="fuelConsumption">Verbrauch (Liter/100km):</label>
                 <input type="number" class="form-control" id="fuelConsumption" name="fuelConsumption"
-                       asp-for="FuelConsumption" step="0.1" required />
+                       asp-for="FuelConsumption" step="0.1" placeholder="0" onfocus="clearPlaceholder(this)" required />
             </div>
 
             <div class="form-group" id="fuelPriceField" style="display:none;">
                 <label id="fuelPriceLabel" for="fuelPriceLabel">Preis für Kraftstoff (€/Liter):</label>
-                <input type="text" class="form-control" id="fuelPrice" name="fuelPrice" asp-for="FuelPrice">
+                <input type="text" class="form-control" id="fuelPrice" name="fuelPrice" asp-for="FuelPrice" value="@Model.FuelPrice">
             </div>
 
-            <div class="form-group">
+            <div class="form-group" id="taxClassComp">
                 <label for="taxClass">Steuerklasse:</label>
                 <select class="form-control" id="taxClass" name="taxClass" asp-for="TaxClass">
                     <option value="1">I</option>
@@ -76,9 +128,29 @@
                 </select>
             </div>
 
-            <div class="form-group">
+            <div class="form-group" id="churchTaxComp">
                 <label for="churchTax">Sind Sie Kirchensteuerpflichtig?</label>
-                <input type="checkbox" id="churchTax" name="churchTax" asp-for="ChurchTax" onchange="calculateNetSalary()" />
+                <input type="checkbox" id="churchTax" name="churchTax" asp-for="ChurchTax" 
+                onchange="calculateNetSalary()" onchange="handleChurchCheckbox()" />
+            </div>
+
+            <div class="form-group" id="bundeslandContainer" style="display:none;">
+                <label for="bundesland">
+                    Bundesland:
+                    <i class="fas fa-info-circle" onclick="showInfoModal('infoModalBundesland')"></i>
+                </label>
+                <select class="form-control" id="bundesland" name="bundesland" asp-for="Bundesland">
+                    <option value="bayern">Bayern</option>
+                    <option value="bawue">Baden-Württemberg</option>
+                    <option value="andere">ein anderes als die obigen</option>
+                </select>
+            </div>
+
+            <div id="infoModalBundesland" style="display:none; ">
+                <div class="modal-content">
+                    <span class="close" onclick="closeInfoModal('infoModalBundesland')">&times;</span>
+                    <p> In Bayern und Baden-Württemberg beträgt die Kirchensteuer 8%. In allen anderen Bundesländern 9%.</p>
+                </div>
             </div>
 
             <div class="form-group" id="soliContainer" style="display:none;">
@@ -86,14 +158,34 @@
                 <input type="checkbox" id="includeSoli" name="includeSoli" />
             </div>
 
+
             <div class="form-group">
-                <label for="includeWearAndTear">Fahrzeugabnutzung einbeziehen:</label>
-                <input type="checkbox" id="includeWearAndTear" name="includeWearAndTear" asp-for="IncludeWearAndTear" />
+                <label for="includeWearAndTear" class="d-flex align-items-center">
+                    Fahrzeugabnutzung einbeziehen?
+                    <input type="checkbox" id="includeWearAndTear" name="includeWearAndTear" asp-for="IncludeWearAndTear" class="ml-2"/>
+                   
+                </label>
+               
+            </div>
+            <!-- Das Modal für die Fahrzeugabnutzung -->
+            <div id="infoModalWearAndTear" style="display:none;">
+                <div class="modal-content">
+                    <span class="close" onclick="closeInfoModal('infoModalWearAndTear')">&times;</span>
+                    <p>
+                        Die Berechnung der Fahrzeugabnutzung basiert auf
+                        pauschalen Schätzungen und berücksichtigt den Fahrzeugtyp
+                        sowie den Zustand des Fahrzeugs. Die tatsächlichen Kosten
+                        können je nach Fahrverhalten und spezifischen Fahrzeugmerkmalen variieren.
+                    </p>
+                </div>
             </div>
 
+
             <div class="form-group" id="wearLevelContainer" style="display:none;">
-                <label for="wearLevel">Fahrzeugabnutzung: </label>
-                <input type="range" class="form-control-range" id="wearLevel" name="wearLevel" asp-for="WearLevel" min="1" max="3" step="1"disabled />
+                <label for="wearLevel">Fahrzeugabnutzung: 
+                    <i class="fas fa-info-circle" onclick="showInfoModal('infoModalWearAndTear')"></i>
+                </label>
+                <input type="range" class="form-control-range" id="wearLevel" name="wearLevel" asp-for="WearLevel" min="1" max="3" step="1" disabled />
                 <small class="form-text-muted">
                     1 = Niedrig (Neues Fahrzeug), 3 = Hoch (älteres Fahrzeug)
                 </small>
@@ -113,81 +205,92 @@
 
 @if (Model.IsCalculated)
 {
+    <div class="card result-card">
+        <div class="card-header">
+            <ul class="nav nav-tabs card-header-tabs" id="calculationTabs" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" id="yearly-tab" data-toggle="tab" href="#yearly" role="tab" aria-controls="yearly" aria-selected="true">Jährlich</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="monthly-tab" data-toggle="tab" href="#monthly" role="tab" aria-controls="monthly" aria-selected="false">Monatlich</a>
+                </li>
+            </ul>
+        </div>
+        <div class="card-body">
+            <div class="tab-content" id="calculationTabsContent">
+                <!-- Jährliche Ansicht -->
+                <div class="tab-pane fade show active" id="yearly" role="tabpanel" aria-labelledby="yearly-tab">
+                    <h5 class="card-title">Jährliche Ergebnisse</h5>
+                    <table class="table table-sm">
+                        <tbody>
+                            @if (Model.IncludeWearAndTear)
+                            {
+                                <tr>
+                                    <td>Jährliche Abnutzungskosten</td>
+                                    <td>@Model.WearAndTearYear.ToString("F2") €</td>
+                                </tr>
+                             
+                            }
+                            <tr>
+                                <td>Jährliche Pendelkosten</td>
+                                <td>@Model.CommuteCostYear.ToString("F2") €</td>
+                            </tr>
+                            @if(Model.IncludeWearAndTear)
+                            {
+                                <tr>
+                                    <td>Jährliche Pendel- und Abnutzungskosten</td>
+                                    <td>@Model.TotalCostWearAndTear.ToString("F2") €</td>
+                                </tr>
+                            }
+                            @if (@Model.UseExternalNetto)
+                            {
+                                <tr id="calculatedExternalNetSalary">
+                                    <td>Dein Netto Jahresgehalt nach allen Abzügen</td>
+                                    <td>@Model.AdjustedNetYearSalary.ToString("F2") €</td>
+                                </tr>
+                            }
+                            @if (@Model.ChurchTax)
+                            {
+                                <tr id="calculatedGrossSalaryWithChurchTaxes" style="display: table-row;">
+                                    <td>Dein Brutto Jahresgehalt nach Abzügen (inkl. Kirchensteuer)</td>
+                                    <td>@ViewData["BruttoNachAbzügen"] €</td>
+                                </tr>
+                            }
+                            <tr id="calculatedGrossSalaryWithoutChurchTaxes" style="display: table-row;">
+                                <td>Dein Brutto Jahresgehalt nach Abzügen (ohne Kirchensteuer)</td>
+                                <td>@ViewData["BruttoNachAbzügen"] €</td>
+                            </tr>
+                            <tr id="calculatedNetSalary">
+                                <td>Dein Netto Jahresgehalt</td>
+                                <td>@Model.AdjustedNetSalary.ToString("F2") € </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
 
-    <!-- <table class="table">
-         <thead>
-             <tr>
-                 <th scope="col">Beschreibung</th>
-                 <th scope="col">Betrag</th>
-             </tr>
-         </thead>
-         <tbody>
-             <tr>
-                 <td>Monatliche Kosten für das Pendeln</td>
-                 <td>@Model.CommuteCost.ToString("F2") € </td>
-             </tr>
-             <tr>
-                 <td>Jährliche Gehaltsdifferenz</td>
-                 <td>@Model.SalaryDifference.ToString("F2") € Brutto</td>
-             </tr>
-             <tr>
-                 <td>Dein Jahresgehalt</td>
-                 <td>@Model.AdjustedSalary.ToString("F2") € Brutto</td>
-             </tr>
-             <tr>
-                 <td>Dein Nettogehalt</td>
-                 <td>@Model.NewNetSalary.ToString("F2") € Netto</td>
-             </tr>
-         </tbody>
-     </table>
-      -->
-    <div class="container form-container">
-        <h2 class="form-header">Jobwechsel-Rechner</h2>
-
-        <form method="post" id="salaryForm">
-            <!-- Form content as before -->
-        </form>
-
-        <!-- Tabelle zur Ausgabe der Ergebnisse -->
-        <table class="table">
-            <thead>
-                <tr>
-                    <th scope="col">Beschreibung</th>
-                    <th scope="col">Betrag</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>Monatliche Kosten für das Pendeln</td>
-                    <td>@Model.CommuteCost.ToString("F2") €</td>
-                </tr>
-            @if (Model.IncludeWearAndTear)
-                {
-                    <tr>
-                        <td>Monatliche Abnutzungskosten</td>
-                        <!-- <td>@Model.TotalCost.ToString("F2") €</td>-->
-                        <td>@Model.MonthlyWearAndTear.ToString("F2") €</td>
-                    </tr>
-                    <tr>
-                        <td> Jährliche Pendel- und Abnutzungskosten</td>
-                        <td> @Model.TotalCostWearAnTear.ToString("F2") €</td>
-                    </tr>
-                }
-                
-                <tr>
-                    <td>Jährliche Gehaltsdifferenz</td>
-                    <td>@Model.SalaryDifference.ToString("F2") € Brutto</td>
-                </tr>
-                <tr>
-                    <td>Dein Jahresgehalt</td>
-                    <td>@Model.AdjustedSalary.ToString("F2") € Brutto</td>
-                </tr>
-                <tr>
-                    <td>Dein Nettogehalt</td>
-                    <td>@Model.AdjustedNetSalary.ToString("F2") € Netto</td>
-                </tr>
-            </tbody>
-        </table>
+                <!-- Monatliche Ansicht -->
+                <div class="tab-pane fade" id="monthly" role="tabpanel" aria-labelledby="monthly-tab">
+                    <h5 class="card-title">Monatliche Ergebnisse</h5>
+                    <table class="table table-sm">
+                        <tbody>
+                            <tr>
+                                <td>Monatliche Kosten für das Pendeln</td>
+                                <td>@Model.CommuteCost.ToString("F2") €</td>
+                            </tr>
+                            @if (Model.IncludeWearAndTear)
+                            {
+                                <tr>
+                                    <td>Monatliche Abnutzungskosten</td>
+                                    <td>@Model.MonthlyWearAndTear.ToString("F2") €</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
+
+
 
 }

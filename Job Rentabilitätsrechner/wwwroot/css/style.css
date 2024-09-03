@@ -1,8 +1,4 @@
-﻿body {
-    background-color: #f8f9fa;
-}
-
-.form-container {
+﻿.form-container {
     max-width: 600px;
     margin: 20px auto;
     padding: 20px;
@@ -24,17 +20,114 @@
     font-style: italic;
 }
 
-.btn-primary {
-    background-color: #007bff;
-    border-color: #007bff;
-}
-
-    .btn-primary:hover {
-        background-color: #0056b3;
-        border-color: #004085;
-    }
 
 .form-text.text-muted {
     font-size: 0.9em;
     color: #6c757d;
 }
+
+
+/* Grundlegende Stile */
+
+header {
+    background-color: #333333;
+    padding: 20px 0;
+    text-align: center;
+    color: #FFFFFF;
+    font-size: 24px;
+}
+
+h2 {
+    color: #333333;
+    margin-bottom: 20px;
+}
+
+
+
+label {
+    margin-bottom: 5px;
+    color: #333333;
+}
+
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+select:focus {
+    outline: none;
+    border-color: #007BFF;
+}
+
+
+.modal-content{
+    color:black;
+}
+
+/* TOGGLE SLIDER */
+
+
+
+.toggle-container {
+    position: relative;
+    width: 40px; /* Angepasst für eine kleinere Größe */
+    height: 20px; /* Angepasst für eine kleinere Größe */
+}
+
+.toggle-checkbox {
+    display: none;
+}
+
+.toggle-label {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #ccc;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+    .toggle-label:before {
+        content: "";
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        width: 16px; /* Angepasst für eine kleinere Größe */
+        height: 16px; /* Angepasst für eine kleinere Größe */
+        background-color: white;
+        border-radius: 50%;
+        transition: transform 0.3s ease;
+    }
+
+.toggle-checkbox:checked + .toggle-label {
+    background-color: #007BFF;
+}
+
+    .toggle-checkbox:checked + .toggle-label:before {
+        transform: translateX(20px); /* Anpassung entsprechend der neuen Größe */
+    }
+   
+    /*CARD BOTTOM*/
+
+.result-card {
+    max-width: 600px; /* Breite der Card */
+    margin: 0 auto; /* Zentriert die Card horizontal */
+    font-size: 0.9rem; /* Verringert die Schriftgröße */
+    border: 1px solid #ddd; /* Optional: Eine dezente Rahmenfarbe */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Optional: Ein leichter Schatten */
+}
+
+    .result-card .card-header {
+        padding: 10px 15px;
+        font-size: 1rem;
+    }
+
+    .result-card .card-body {
+        padding: 15px;
+    }
+
+    .result-card .table {
+        margin-bottom: 0; /* Verhindert zusätzlichen Abstand unter der Tabelle */
+    }
+

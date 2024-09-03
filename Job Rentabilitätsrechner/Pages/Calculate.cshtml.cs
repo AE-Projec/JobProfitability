@@ -23,7 +23,7 @@ namespace Job_Rentabilitätsrechner.Pages
         [BindProperty]
         public float NewGrossSalary { get; set; }
         [BindProperty]
-        public bool IncludeSoli {  get; set; }
+        public bool IncludeSoli { get; set; }
         [BindProperty]
         public int TaxClass { get; set; }
         [BindProperty]
@@ -36,7 +36,24 @@ namespace Job_Rentabilitätsrechner.Pages
         public int WearLevel { get; set; } = 2; // Standardwert für Fahrzeugabnutzung
         [BindProperty]
         public bool IncludeWearAndTear { get; set; }
+        [BindProperty]
+        public string? Bundesland { get; set; }
+        [BindProperty]
+        public string? TransmissionType { get; set; }
+        [BindProperty]
+        public int? GearCount { get; set; }
+        [BindProperty]
+        public float? ExternNetSalary { get; set; }
+        [BindProperty]
+        public int AverageCommuteDays { get; set; }
+        [BindProperty]
+        public float CommuteCostYear { get; set; }
+        [BindProperty]
+        public float WearAndTearYear { get; set; }
+        [BindProperty]
+        public bool UseExternalNetto { get; set; }
         #endregion
+
 
         #region Public Variables
         public float TotalCost { get; set; }
@@ -45,15 +62,15 @@ namespace Job_Rentabilitätsrechner.Pages
         public float SalaryDifference { get; set; }
         public bool IsCalculated { get; set; }
         public float MonthlyWearAndTear { get; set; }
-        public float TotalCostWearAnTear { get; set; }
+        public float TotalCostWearAndTear { get; set; }
         public float AdjustedNetSalary { get; set; }
+        public float AdjustedNetYearSalary { get; set; }
+
+
         #endregion
 
         public JsonResult OnGetCalculateNetSalary(float grossSalary, float newGrossSalary, int taxClass, bool churchTax)
         {
-
-            System.Diagnostics.Debug.WriteLine("CalculateNetSalary Handler Called");
-            System.Diagnostics.Debug.WriteLine($"grossSalary: {grossSalary}, taxClass: {taxClass}, churchTax: {churchTax}");
             try
             {
                 BruttoNettoCalculator calculator = new BruttoNettoCalculator();
@@ -67,66 +84,167 @@ namespace Job_Rentabilitätsrechner.Pages
                 return new JsonResult(new { Error = ex.Message });
             }
         }
-        
+
+
+
+
+
 
         public void OnPost()
         {
-            
+
             BruttoNettoCalculator calculator = new BruttoNettoCalculator();
-            float annualWearAndTearCost = 0;
 
-            NetSalary = calculator.CalculateNetto(GrossSalary, TaxClass, ChurchTax);
-            NewNetSalary = calculator.CalculateNetto(NewGrossSalary, TaxClass, ChurchTax);
+            // Berechnung der Kirchensteuer
+            float kirchensteuerRate = CalculateKirchensteuerRate();
 
-            float soliThreshold = (TaxClass == 3 || TaxClass == 4) ? 136826f : 68413f;
-            if(GrossSalary > soliThreshold)
+            // Anpassung des Kraftstoffverbrauchs
+            float adjustedFuelConsumption = AdjustFuelConsumption(FuelConsumption);
+
+            // Berechnung des Bruttoeinkommens nach Abzügen
+            float bruttoNachAbzügen = calculator.CalculateGrossAfterDeductions(GrossSalary, TaxClass, ChurchTax, kirchensteuerRate);
+
+
+            // Berechnung der Nettogehälter
+            CalculateNetSalaries(calculator, kirchensteuerRate);
+
+            // Überprüfung des Solidaritätszuschlags
+            CheckSoliThreshold(GrossSalary, TaxClass);
+
+            // Berechnung der Pendelkosten und Gesamtkosten
+            if (float.TryParse(FuelPrice, NumberStyles.Float, CultureInfo.InvariantCulture, out float parsedFuelPrice))
             {
-                IncludeSoli = true;
+                CalculateCommuteAndTotalCosts(parsedFuelPrice, adjustedFuelConsumption, calculator, kirchensteuerRate);
             }
-
-            // Berechnung der Kosten pro Kilometer
-            if (float.TryParse(FuelPrice,NumberStyles.Float,CultureInfo.InvariantCulture,out float parsedFuelPrice))
+            if (AverageCommuteDays < 0 || AverageCommuteDays > 7)
             {
-                
-                float costPerKm = (FuelConsumption / 100f) * parsedFuelPrice;
-
-               // DailyCost = CommuteDistance * costPerKm;
-
-                // Berechnung der jährlichen Pendelkosten (Hin- und Rückfahrt, 230 Arbeitstage)
-                float annualCommuteCost = CommuteDistance * 2 * costPerKm * 230;
-               
-                // Monatliche Pendelkosten
-                CommuteCost = (float)Math.Round(annualCommuteCost / 12,2);
-
-                if (IncludeWearAndTear)
-                {
-                    WearAndTearCalculator wearAndTearCalculator = new WearAndTearCalculator();
-                    annualWearAndTearCost = wearAndTearCalculator.CalculateWearAndTear(CommuteDistance * 230, WearLevel);
-                }
-                
-
-                // Gesamtjahreskosten (Pendelkosten + Abnutzungskosten)
-                float totalAnnualCost = annualCommuteCost + annualWearAndTearCost;
-
-                TotalCost = (float)Math.Round(totalAnnualCost / 12, 2);
-
-                MonthlyWearAndTear = TotalCost - CommuteCost;
-
-                TotalCostWearAnTear = totalAnnualCost;
-
-                float adjustedGrossSalary = NewGrossSalary - totalAnnualCost;
-
-                AdjustedNetSalary = calculator.CalculateNetto(adjustedGrossSalary,TaxClass,ChurchTax);
-
-                // Berechne die Gehaltsdifferenz nach Pendelkosten (Neue Gehalt - Alte Gehalt)
-                SalaryDifference = (NewGrossSalary - GrossSalary) - totalAnnualCost;
-
-                // Berechne das angepasste Jahresgehalt (nach Abzug der Pendelkosten)
-                AdjustedSalary = NewGrossSalary - totalAnnualCost;
-
-                IsCalculated = true;
+                ModelState.AddModelError("AverageCommuteDays", "Die durchschnittliche Anzahl der Pendeltage pro Woche muss zwischen 0 und 7 liegen.");
+                return;
             }
- 
+            // Optional: Ausgabe in der View
+            ViewData["BruttoNachAbzügen"] = bruttoNachAbzügen;
         }
+
+
+
+
+
+        private float CalculateKirchensteuerRate()
+        {
+            float rate = 0.09f;
+            if (ChurchTax)
+            {
+                if (Bundesland == "bayern" || Bundesland == "bawue")
+                {
+                    rate = 0.08f;
+                }
+            }
+            return rate;
+        }
+
+        private float AdjustFuelConsumption(float consumption)
+        {
+            float adjustedConsumption = consumption;
+
+            if (TransmissionType == "automatic")
+            {
+                adjustedConsumption *= 1.10f; // Erhöhung um 10% bei Automatikgetriebe
+
+                if (GearCount.HasValue && GearCount > 5)
+                {
+                    adjustedConsumption *= 0.95f; // Reduzierung um 5% bei mehr als 5 Gängen
+                }
+            }
+
+            return adjustedConsumption;
+        }
+
+        private void CalculateNetSalaries(BruttoNettoCalculator calculator, float kirchensteuerRate)
+        {
+
+            if (UseExternalNetto && ExternNetSalary.HasValue && ExternNetSalary > 0)
+            {
+                NetSalary = ExternNetSalary.Value;
+
+
+                float soli = calculator.CalculateSoliForExternalNetto(NetSalary, TaxClass);
+                NetSalary -= soli;
+            }
+            else
+            {
+                NetSalary = calculator.CalculateNetto(GrossSalary, TaxClass, ChurchTax, kirchensteuerRate);
+            }
+
+
+            NewNetSalary = calculator.CalculateNetto(NewGrossSalary, TaxClass, ChurchTax, kirchensteuerRate);
+        }
+
+
+
+
+
+        
+        private void CalculateCommuteAndTotalCosts(float parsedFuelPrice, float adjustedFuelConsumption, BruttoNettoCalculator calculator, float kirchensteuerRate)
+        {
+            float costPerKm = (adjustedFuelConsumption / 100f) * parsedFuelPrice;
+            // Berechnung der jährlichen Pendeltage basierend auf den durchschnittlichen Arbeitstagen pro Woche
+            int annualWorkDays = AverageCommuteDays * 52; // 52 Wochen im Jahr
+
+            // Berechnung der jährlichen Pendelkosten (Hin- und Rückfahrt, durchschnittlichen Arbeitstage pro woche)
+            float annualCommuteCost = CommuteDistance * 2 * costPerKm * annualWorkDays;
+
+            // Monatliche Pendelkosten
+            CommuteCost = (float)Math.Round(annualCommuteCost / 12, 2);
+
+            //Jährliche Pendelkosten
+            CommuteCostYear = CommuteCost * 12;
+
+
+
+            float annualWearAndTearCost = 0;
+            if (IncludeWearAndTear)
+            {
+                WearAndTearCalculator wearAndTearCalculator = new WearAndTearCalculator();
+                annualWearAndTearCost = wearAndTearCalculator.CalculateWearAndTear(CommuteDistance * annualWorkDays, WearLevel);
+            }
+
+            // Gesamtjahreskosten (Pendelkosten + Abnutzungskosten)
+            float totalAnnualCost = annualCommuteCost + annualWearAndTearCost;
+
+            // Monatliche Gesamtkosten
+            TotalCost = (float)Math.Round(totalAnnualCost / 12, 2);
+
+            // Monatliche Abnutzungskosten
+            MonthlyWearAndTear = TotalCost - CommuteCost;
+
+            // Gesamtjahreskosten (inkl. Pendelkosten und Abnutzung)
+            TotalCostWearAndTear = totalAnnualCost;
+
+            //Jährliche Abnutzungskosten
+            WearAndTearYear = MonthlyWearAndTear * 12;
+
+            // Anpassung des Jahresgehalts nach Abzug der Gesamtkosten
+            float adjustedGrossSalary = NewGrossSalary - totalAnnualCost;
+            AdjustedNetSalary = calculator.CalculateNetto(adjustedGrossSalary, TaxClass, ChurchTax, kirchensteuerRate);
+
+            // Berechnung der Gehaltsdifferenz nach Pendelkosten
+            //SalaryDifference = (NewGrossSalary - GrossSalary) - totalAnnualCost;
+
+            // Berechnung des angepassten Jahresgehalts
+            AdjustedSalary = NewGrossSalary - totalAnnualCost;
+
+            AdjustedNetYearSalary = Math.Max(0,NetSalary - totalAnnualCost);
+
+            IsCalculated = true;
+        }
+        
+        private void CheckSoliThreshold(float grossSalary, int taxClass)
+        {
+            float soliThreshold = (taxClass == 3 || taxClass == 4) ? 136826f : 68413f;
+            IncludeSoli = grossSalary > soliThreshold;
+        }
+
+     
+
     }
 }

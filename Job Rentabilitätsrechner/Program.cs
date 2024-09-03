@@ -1,7 +1,17 @@
+using Job_Rentabilitätsrechner.Pages;
+using Job_Rentabilitätsrechner.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
+
+builder.Services.AddTransient<NetSalaryCalculationService>();
+builder.Services.AddTransient<CommuteCostCalculationService>();
+
+builder.Services.AddTransient<FuelConsumptionAdjustmentService>();
+
+
 
 var app = builder.Build();
 

@@ -1,12 +1,14 @@
-﻿namespace Job_Rentabilitätsrechner.Pages
+﻿using System.Formats.Asn1;
+
+namespace Job_Rentabilitätsrechner.Pages
 {
     public class BruttoNettoCalculator
     {
-        public float CalculateNetto(float brutto, int steuerklasse, bool kirchensteuer)
+        public float CalculateNetto(float brutto, int steuerklasse, bool kirchensteuer, float kirchensteuerRate = 0.09f)
         {
             float lohnsteuer = CalculateLohnsteuer(brutto, steuerklasse);
             float solidaritätszuschlag = lohnsteuer * 0.055f;
-            float kirchensteuerbetrag = kirchensteuer ? lohnsteuer * 0.09f : 0f;
+            float kirchensteuerbetrag = kirchensteuer ? lohnsteuer * kirchensteuerRate : 0f;
 
             float rentenversicherung = brutto * 0.093f; //9,3 % für Rentenversicherung
             float krankenversicherung = brutto * 0.073f;// 7,3% für Krankenversicherung
@@ -18,6 +20,32 @@
                                       pflegeversicherung + arbeitslosenversicherung);
 
             return netto;
+        }
+
+        public float CalculateSoliForExternalNetto(float externalNetSalary, int taxClass)
+        {
+            float soliThreshold = (taxClass == 3 || taxClass == 4) ? 136826f : 68413f;
+            float lohnsteuer = externalNetSalary * 0.18f;
+            float solidaritätszuschlag = lohnsteuer * 0.055f;
+            if (externalNetSalary > soliThreshold)
+            {
+                return solidaritätszuschlag;
+            }
+            else
+            {
+                return 0f;
+            }
+        }
+
+        public float CalculateGrossAfterDeductions(float brutto, int steuerklasse, bool kirchensteuer, float kirchensteuerRate = 0.09f)
+        {
+            float lohnsteuer = CalculateLohnsteuer(brutto, steuerklasse);
+            float kirchensteuerbetrag = kirchensteuer ? lohnsteuer * kirchensteuerRate : 0f;
+
+            // Berechne das Brutto nach Abzug von Lohnsteuer und Kirchensteuer
+            float bruttoNachAbzügen = brutto - (lohnsteuer + kirchensteuerbetrag);
+
+            return bruttoNachAbzügen;
         }
 
 
