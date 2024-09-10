@@ -1,17 +1,20 @@
+using Job_Rentabilitätsrechner.Interfaces;
 using Job_Rentabilitätsrechner.Pages;
 using Job_Rentabilitätsrechner.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddControllers();
+
 // Add services to the container.
 builder.Services.AddRazorPages();
-
-builder.Services.AddTransient<NetSalaryCalculationService>();
-builder.Services.AddTransient<CommuteCostCalculationService>();
-
-builder.Services.AddTransient<FuelConsumptionAdjustmentService>();
-
-
+builder.Services.AddHttpClient();
+builder.Services.AddScoped<ICommuteCostCalculationService, CommuteCostCalculationService>();
+builder.Services.AddScoped<IWearAndTearCalculator, WearAndTearCalculationService>();
+builder.Services.AddScoped<INetSalaryCalculationService, NetSalaryCalculationService>();
+builder.Services.AddScoped<IGeocodingService, GeocodingService>();
+builder.Services.AddScoped<IDistanceService, DistanceService>();
+builder.Services.AddScoped<IFuelConsumptionAdjustment, FuelConsumptionAdjustmentService>();
 
 var app = builder.Build();
 
@@ -29,6 +32,8 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.UseAuthorization();
+
+app.MapControllers();
 
 app.MapRazorPages();
 

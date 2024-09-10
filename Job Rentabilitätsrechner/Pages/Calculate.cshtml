@@ -6,8 +6,12 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    
+
     <title>Jobwechsel-Rechner</title>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js"></script>
 </head>
 
 <body>
@@ -17,7 +21,7 @@
 
         <form method="post" id="salaryForm">
             <div class="form-group">
-                <label>Externes Netto-Gehalt verwenden?</label><br>
+                <label>Kennen Sie bereits Ihr Nettogehalt?</label><br>
                 <label class="radio-inline">
                     <input type="radio" id="falseRadio" name="useExternalNetto" value="false" @(!Model.UseExternalNetto ? "checked" : "")> Nein
                 </label>
@@ -28,14 +32,11 @@
 
 
             <div class="form-group" id="externalNettoInput" style="display:none;">
-                <label for="externalNetto">Externes Netto Jahresgehalt (€):</label>
+                <label for="externalNetto">Ihr Netto Jahresgehalt (€):</label>
                 <input type="number" class="form-control" step="0.01"
                        placeholder="0" onfocus="clearPlaceholder(this)" asp-for="ExternNetSalary">
 
             </div>
-
-
-
 
             <div class="form-group" id="oldBruttoInput">
                 <label for="grossSalary">Altes Gehalt (Brutto/Jahr):</label>
@@ -61,11 +62,39 @@
                 <small class="form-text text-muted">Geben Sie die Anzahl der Tage an, die Sie im durchschnitt pro Woche ins Büro pendeln.</small>
             </div>
 
+            <!-- Div für die Berechnung der Pendelstrecke bei input :  onclick="toggleDistanceFields()" -->
+            
+            <div class="form-group">
+                <label>Strecke automatisch berechnen?</label><br>
+                <label class="radio-inline">
+                    <input type="radio" id="calculateNo" name="autoCalculate" value="false" checked @(!Model.UseCalculateDistance ? "checked" : "")> Nein
+                </label>
+                <label class="radio-inline">
+                    <input type="radio" id="calculateYes" name="autoCalculate" value="true"  @(Model.UseCalculateDistance ? "checked" : "")> Ja
+                </label>
+            </div>
+
+            
+            <div id="distanceFields" style="display:none;" class="card mt-4 p-3">
+                <label for="fromLocation">Von:</label>
+                <input type="text" id="fromLocation" name="fromLocation" placeholder="Geben Sie eine Startadresse ein...">
+
+                <label for="toLocation">Nach:</label>
+                <input type="text" id="toLocation" name="toLocation" placeholder="Geben Sie eine Zieladresse ein...">
+
+                <div class="text-right">
+                    <button type="button" class="btn btn-primary btn-block mt-4" onclick="calculateDistance()">
+
+                    <i class="fas fa-route"></i> Strecke berechnen
+                </button>
+                </div>
+            </div>
+            
 
             <div class="form-group">
                 <label for="commuteDistance">Pendeldistanz hin und zurück pro Tag (einfach in km):</label>
                 <input type="number" class="form-control" id="commuteDistance" name="commuteDistance"
-                       asp-for="CommuteDistance" placeholder="0" onfocus="clearPlaceholder(this)" required>
+                       asp-for="CommuteDistance" placeholder="0" class="form-control" step="0.01" onfocus="clearPlaceholder(this)">
             </div>
 
             <div class="form-group">
@@ -86,28 +115,31 @@
                     <option value="manual">Schaltgetriebe</option>
                     <option value="automatic">Automatikgetriebe</option>
                 </select>
-            </div>
 
-            <div class="form-group" id="gearCountField" style="display:none;">
-                <label for="gearCount">
-                    Anzahl der Gänge (nur bei Automatik):
-                    <i class="fas fa-info-circle" onclick="showInfoModal('infoModalGearCount')"></i>
-                </label>
-                <input type="number" class="form-control" id="gearCount" name="gearCount" asp-for="GearCount" min="1" step="1" />
-            </div>
 
-            <!-- Modal (aus dem Formular heraus verschoben) -->
-            <div id="infoModalGearCount" style="display:none;">
-                <div class="modal-content">
-                    <span class="close" onclick="closeInfoModal('infoModalGearCount')">&times;</span>
-                    <p>
-                        Die Berechnung des Kraftstoffverbrauchs basiert auf Schätzungen. Automatikgetriebe verbrauchen im Durchschnitt etwa 10% mehr Kraftstoff. Fahrzeuge mit mehr als 5 Gängen können etwa 5% sparsamer sein. Diese Werte sind Richtwerte und können je nach Fahrstil und Fahrzeug variieren.
-                    </p>
+                <div class="form-group" id="gearCountField" style="display:none;">
+                    <label for="gearCount">
+                        Anzahl der Gänge (nur bei Automatik):
+                        <i class="fas fa-info-circle" onclick="showInfoModal('infoModalGearCount')"></i>
+                    </label>
+                    <input type="number" class="form-control" id="gearCount" name="gearCount" asp-for="GearCount" min="1" step="1" />
+                </div>
+
+                <!-- Modal (aus dem Formular heraus verschoben) -->
+                <div id="infoModalGearCount" style="display:none;">
+                    <div class="modal-content">
+                        <span class="close" onclick="closeInfoModal('infoModalGearCount')">&times;</span>
+                        <p>
+                            Die Berechnung des Kraftstoffverbrauchs basiert auf Schätzungen. Automatikgetriebe verbrauchen im Durchschnitt etwa 10% mehr Kraftstoff. Fahrzeuge mit mehr als 5 Gängen können etwa 5% sparsamer sein. Diese Werte sind Richtwerte und können je nach Fahrstil und Fahrzeug variieren.
+                        </p>
+                    </div>
                 </div>
             </div>
 
             <div class="form-group">
-                <label id="fuelConsumptionLabel" for="fuelConsumption">Verbrauch (Liter/100km):</label>
+                <label id="fuelConsumptionLabel" for="fuelConsumption">
+                    Verbrauch (Liter/100km):
+                </label>
                 <input type="number" class="form-control" id="fuelConsumption" name="fuelConsumption"
                        asp-for="FuelConsumption" step="0.1" placeholder="0" onfocus="clearPlaceholder(this)" required />
             </div>
@@ -131,10 +163,10 @@
 
             <div class="form-group" id="churchTaxComp">
                 <label for="churchTax">Sind Sie Kirchensteuerpflichtig?</label>
-                <input type="checkbox" id="churchTax" name="churchTax" asp-for="ChurchTax" 
-                onchange="calculateNetSalary()" onchange="handleChurchCheckbox()" />
-            </div>
+                <input type="checkbox" id="churchTax" name="churchTax" asp-for="ChurchTax"
+                       onchange="calculateNetSalary()" onchange="handleChurchCheckbox()" />
 
+            </div>
             <div class="form-group" id="bundeslandContainer" style="display:none;">
                 <label for="bundesland">
                     Bundesland:
@@ -145,14 +177,17 @@
                     <option value="bawue">Baden-Württemberg</option>
                     <option value="andere">ein anderes als die obigen</option>
                 </select>
-            </div>
 
-            <div id="infoModalBundesland" style="display:none; ">
-                <div class="modal-content">
-                    <span class="close" onclick="closeInfoModal('infoModalBundesland')">&times;</span>
-                    <p> In Bayern und Baden-Württemberg beträgt die Kirchensteuer 8%. In allen anderen Bundesländern 9%.</p>
+
+                <div id="infoModalBundesland" style="display:none;">
+                    <div class="modal-content">
+                        <span class="close" onclick="closeInfoModal('infoModalBundesland')">&times;</span>
+                        <p> In Bayern und Baden-Württemberg beträgt die Kirchensteuer 8%. In allen anderen Bundesländern 9%.</p>
+                    </div>
                 </div>
             </div>
+
+
 
             <div class="form-group" id="soliContainer" style="display:none;">
                 <label for="includeSoli">Solidaritätszuschlag berechnen:</label>
@@ -163,42 +198,41 @@
             <div class="form-group">
                 <label for="includeWearAndTear" class="d-flex align-items-center">
                     Fahrzeugabnutzung einbeziehen?
-                    <input type="checkbox" id="includeWearAndTear" name="includeWearAndTear" asp-for="IncludeWearAndTear" class="ml-2"/>
-                   
+                    <input type="checkbox" id="includeWearAndTear" name="includeWearAndTear" asp-for="IncludeWearAndTear" class="ml-2" />
+
                 </label>
-               
             </div>
-            <!-- Das Modal für die Fahrzeugabnutzung -->
-            <div id="infoModalWearAndTear" style="display:none;">
-                <div class="modal-content">
-                    <span class="close" onclick="closeInfoModal('infoModalWearAndTear')">&times;</span>
-                    <p>
-                        Die Berechnung der Fahrzeugabnutzung basiert auf
-                        pauschalen Schätzungen und berücksichtigt den Fahrzeugtyp
-                        sowie den Zustand des Fahrzeugs. Die tatsächlichen Kosten
-                        können je nach Fahrverhalten und spezifischen Fahrzeugmerkmalen variieren.
-                    </p>
-                </div>
-            </div>
-
-
             <div class="form-group" id="wearLevelContainer" style="display:none;">
-                <label for="wearLevel">Fahrzeugabnutzung: 
+                <label for="wearLevel">
+                    Fahrzeugabnutzung:
                     <i class="fas fa-info-circle" onclick="showInfoModal('infoModalWearAndTear')"></i>
                 </label>
                 <input type="range" class="form-control-range" id="wearLevel" name="wearLevel" asp-for="WearLevel" min="1" max="3" step="1" disabled />
                 <small class="form-text-muted">
                     1 = Niedrig (Neues Fahrzeug), 3 = Hoch (älteres Fahrzeug)
                 </small>
+
+
+
+                <!-- Das Modal für die Fahrzeugabnutzung -->
+                <div id="infoModalWearAndTear" style="display:none;">
+                    <div class="modal-content">
+                        <span class="close" onclick="closeInfoModal('infoModalWearAndTear')">&times;</span>
+                        <p>
+                            Die Berechnung der Fahrzeugabnutzung basiert auf
+                            pauschalen Schätzungen und berücksichtigt den Fahrzeugtyp
+                            sowie den Zustand des Fahrzeugs. Die tatsächlichen Kosten
+                            können je nach Fahrverhalten und spezifischen Fahrzeugmerkmalen variieren.
+                        </p>
+                    </div>
+                </div>
             </div>
+
 
             <button type="submit" class="btn btn-primary btn-block mt-4">Berechnen</button>
         </form>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js"></script>
 </body>
 </html>
 
@@ -230,13 +264,13 @@
                                     <td>Jährliche Abnutzungskosten</td>
                                     <td>@Model.WearAndTearYear.ToString("F2") €</td>
                                 </tr>
-                             
+
                             }
                             <tr>
                                 <td>Jährliche Pendelkosten</td>
                                 <td>@Model.CommuteCostYear.ToString("F2") €</td>
                             </tr>
-                            @if(Model.IncludeWearAndTear)
+                            @if (Model.IncludeWearAndTear)
                             {
                                 <tr>
                                     <td>Jährliche Pendel- und Abnutzungskosten</td>
@@ -252,11 +286,13 @@
                             }
                             @if (@Model.ChurchTax)
                             {
+
                                 <tr id="calculatedGrossSalaryWithChurchTaxes" style="display: table-row;">
                                     <td>Dein Brutto Jahresgehalt nach Abzügen (inkl. Kirchensteuer)</td>
                                     <td>@ViewData["BruttoNachAbzügen"] €</td>
                                 </tr>
                             }
+
                             <tr id="calculatedGrossSalaryWithoutChurchTaxes" style="display: table-row;">
                                 <td>Dein Brutto Jahresgehalt nach Abzügen (ohne Kirchensteuer)</td>
                                 <td>@ViewData["BruttoNachAbzügen"] €</td>

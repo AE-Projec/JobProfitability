@@ -1,6 +1,8 @@
-﻿namespace Job_Rentabilitätsrechner.Services
+﻿using Job_Rentabilitätsrechner.Interfaces;
+
+namespace Job_Rentabilitätsrechner.Services
 {
-    public class FuelConsumptionAdjustmentService
+    public class FuelConsumptionAdjustmentService : IFuelConsumptionAdjustment
     {
         public float AdjustFuelConsumption(float consumption, string? transmissionType,int? gearCount)
         {

@@ -1,24 +1,36 @@
-﻿using Job_Rentabilitätsrechner.Pages;
+﻿using Job_Rentabilitätsrechner.Interfaces;
+using Job_Rentabilitätsrechner.Pages;
 
 namespace Job_Rentabilitätsrechner.Services
 {
-    public class CommuteCostCalculationService
+    public class CommuteCostCalculationService : ICommuteCostCalculationService
     {
+        private readonly IWearAndTearCalculator _wearAndTearCalculator;
+        private readonly INetSalaryCalculationService _netSalaryCalculationService;
+      //  private readonly IBruttoNettoCalculator_DEPRICATED _bruttoNettoCalculator;
 
-        public float BerechnePendelkosten(float fuelPrice, float fuelConsumption, float commuteDistance, int averageCommuteDays)
+        public CommuteCostCalculationService(IWearAndTearCalculator wearAndTearCalculator, 
+            INetSalaryCalculationService netSalaryCalculationService)
+        {
+            _wearAndTearCalculator = wearAndTearCalculator;
+            _netSalaryCalculationService = netSalaryCalculationService;
+           // _bruttoNettoCalculator = bruttoNettoCalculator;
+        }
+
+        public float CalculateCommuteCosts(float fuelPrice, float fuelConsumption, float commuteDistance, int averageCommuteDays)
         {
             float costPerKm = fuelConsumption / 100f * fuelPrice;
             int annualWorkDays = averageCommuteDays * 52;
             return commuteDistance * 2 * costPerKm * annualWorkDays;
         }
 
-        public float BerechneAbnutzungskosten(float commuteDistance, int averageCommuteDays, int wearLevel, bool includeWearAndTear)
+        public float CalculateWearAndTearCosts(float commuteDistance, int averageCommuteDays, int wearLevel, bool includeWearAndTear)
         {
             if (!includeWearAndTear) return 0;
 
-            WearAndTearCalculator wearAndTearCalculator = new WearAndTearCalculator();
+            //WearAndTearCalculator wearAndTearCalculator = new WearAndTearCalculator();
             int annualWorkDays = averageCommuteDays * 52;
-            return wearAndTearCalculator.CalculateWearAndTear(commuteDistance * annualWorkDays, wearLevel);
+            return _wearAndTearCalculator.CalculateWearAndTear(commuteDistance * annualWorkDays, wearLevel);
         }
 
         
@@ -31,10 +43,9 @@ namespace Job_Rentabilitätsrechner.Services
             bool includeWearAndTear,
             float grossSalary,
             float newGrossSalary,
-            float taxClass,
+            int taxClass,
             bool churchTax,
             float kirchensteuerRate,
-            NetSalaryCalculationService netSalaryCalculationService,
             out float commuteCost,
             out float commuteCostYear,
             out float totalCost,
@@ -43,7 +54,8 @@ namespace Job_Rentabilitätsrechner.Services
             out float wearAndTearYear,
             out float adjustedNetSalary,
             out float salaryDifference,
-            out float adjustedSalary)
+            out float adjustedSalary,
+            out float totalAnnualCost)
         {
             float costPerKm = (adjustedFuelConsumption / 100f) * parsedFuelPrice;
             // Berechnung der jährlichen Pendeltage basierend auf den durchschnittlichen Arbeitstagen pro Woche
@@ -63,12 +75,11 @@ namespace Job_Rentabilitätsrechner.Services
             float annualWearAndTearCost = 0;
             if (includeWearAndTear)
             {
-                WearAndTearCalculator wearAndTearCalculator = new WearAndTearCalculator();
-                annualWearAndTearCost = wearAndTearCalculator.CalculateWearAndTear(commuteDistance * annualWorkDays, wearLevel);
+                annualWearAndTearCost = _wearAndTearCalculator.CalculateWearAndTear(commuteDistance * annualWorkDays, wearLevel);
             }
 
             // Gesamtjahreskosten (Pendelkosten + Abnutzungskosten)
-            float totalAnnualCost = annualCommuteCost + annualWearAndTearCost;
+            totalAnnualCost = annualCommuteCost + annualWearAndTearCost;
 
             // Monatliche Gesamtkosten
             totalCost = (float)Math.Round(totalAnnualCost / 12, 2);
@@ -84,7 +95,8 @@ namespace Job_Rentabilitätsrechner.Services
 
             // Anpassung des Jahresgehalts nach Abzug der Gesamtkosten
             float adjustedGrossSalary = newGrossSalary - totalAnnualCost;
-            adjustedNetSalary = netSalaryCalculationService.CalculateNetSalary(adjustedGrossSalary, (int)taxClass, churchTax, kirchensteuerRate);
+            // adjustedNetSalary = _bruttoNettoCalculator.CalculateNetto(adjustedGrossSalary, (int)taxClass, churchTax, kirchensteuerRate);
+            adjustedNetSalary = _netSalaryCalculationService.CalculateNewNetSalary(adjustedGrossSalary, taxClass, churchTax, kirchensteuerRate);
 
             // Berechnung der Gehaltsdifferenz nach Pendelkosten
             salaryDifference = (newGrossSalary - grossSalary) - totalAnnualCost;

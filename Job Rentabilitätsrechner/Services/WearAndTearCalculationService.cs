@@ -1,8 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Job_Rentabilitätsrechner.Interfaces;
 
-namespace Job_Rentabilitätsrechner.Pages
+namespace Job_Rentabilitätsrechner.Services
 {
-    public class WearAndTearCalculator
+    public class WearAndTearCalculationService : IWearAndTearCalculator
     {
         public float CalculateTotalWearAndTear(float distanceInKm)
         {

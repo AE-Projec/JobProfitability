@@ -1,4 +1,6 @@
-﻿function updateFuelPrice() {
+﻿//import { auto } = require("@popperjs/core");
+
+function updateFuelPrice() {
     var fuelType = document.getElementById("fuelType").value;
     var fuelPriceField = document.getElementById("fuelPriceField");
     var fuelPriceLabel = document.getElementById("fuelPriceLabel");
@@ -21,12 +23,12 @@
         fuelInput.value = fuelData[fuelType].value;
 
         if (fuelType === "electricity") {
-            fuelConsumptionLabel.innerText = "Verbauch (kWh/100km)";
+            fuelConsumptionLabel.innerText = "Verbauch (kWh/100km):";
             transmissionTypeField.style.display = "none";
             gearCountField.style.display = "none";
         }
         else {
-            fuelConsumptionLabel.innerText = "Verbrauch (Liter/100km)";
+            fuelConsumptionLabel.innerText = "Verbrauch (Liter/100km):";
             transmissionTypeField.style.display = "block";
         }
     } else {
@@ -58,7 +60,7 @@ document.addEventListener("DOMContentLoaded", function () {
             soliThreshold = 68413;
         }
 
-        // Deaktivieren der Checkbox, wenn das Bruttoeinkommen über der Grenze liegt
+        // aktivieren der Checkbox, wenn das Bruttoeinkommen über der Grenze liegt
         if (grossSalary > soliThreshold || newGrossSalary > soliThreshold) {
             document.getElementById("includeSoli").checked = true;
             document.getElementById("includeSoli").disabled = true;
@@ -121,6 +123,8 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         }
     }
+
+
 
 });
 
@@ -236,32 +240,83 @@ function hideModalOnWearAndTearCheckbox() {
     }
 }
 
-
-
 function handleChurchCheckbox() {
     var calculatedBruttoWithChurch = document.getElementById("calculatedGrossSalaryWithChurchTaxes");
     var calculatedBruttoWithoutChurch = document.getElementById("calculatedGrossSalaryWithoutChurchTaxes");
     var churchTaxCheckBox = document.getElementById("churchTax");
+    var useExternalNettoTrue = document.querySelector('input[name="useExternalNetto"]:checked').value === 'true';
 
-    if (churchTaxCheckBox.checked) {
-        if (calculatedBruttoWithoutChurch) {
-            calculatedBruttoWithoutChurch.style.display = "none";
-        }
-        if (calculatedBruttoWithChurch) {
-            calculatedBruttoWithChurch.style.display = "table-row";
-        }
+    if (useExternalNettoTrue) {
+        // Wenn externes Netto verwendet wird, Kirchensteuer ignorieren
+        calculatedBruttoWithChurch.style.display = "none"; // Zeile mit Kirchensteuer ausblenden
+        calculatedBruttoWithoutChurch.style.display = "table-row"; // Zeile ohne Kirchensteuer anzeigen
+        churchTaxCheckBox.checked = false; // Checkbox abwählen
+        churchTaxCheckBox.disabled = true; // Checkbox deaktivieren
     } else {
-        if (calculatedBruttoWithChurch) {
+        // Wenn externes Netto nicht verwendet wird, kann die Kirchensteuer berücksichtigt werden
+        churchTaxCheckBox.disabled = false; // Checkbox wieder aktivieren
+        if (churchTaxCheckBox.checked) {
+            // Zeige Gehalt mit Kirchensteuer und blende das ohne Kirchensteuer aus
+            calculatedBruttoWithChurch.style.display = "table-row";
+            calculatedBruttoWithoutChurch.style.display = "none";
+        } else {
+            // Zeige Gehalt ohne Kirchensteuer
             calculatedBruttoWithChurch.style.display = "none";
-        }
-        if (calculatedBruttoWithoutChurch) {
             calculatedBruttoWithoutChurch.style.display = "table-row";
         }
     }
 }
+
+function toggleDistanceFields() {
+    var autoCalculate = document.querySelector('input[name="autoCalculate"]:checked').value;
+    var fromLocation = document.getElementById("fromLocation");
+    var toLocation = document.getElementById("toLocation");
+    var distanceFields = document.getElementById("distanceFields");
+
+    if (autoCalculate === "true") {
+        distanceFields.style.display = "block";
+    } else {
+        distanceFields.style.display = "none";
+        fromLocation.value = "";
+        toLocation.value = "";
+    }
+}
 document.addEventListener("DOMContentLoaded", function () {
     handleChurchCheckbox();
+    hideModalOnChurchCheckbox();
 });
+
+async function calculateDistance() {
+    var fromLocation = document.getElementById("fromLocation").value;
+    var toLocation = document.getElementById("toLocation").value;
+    var commuteDistance = document.getElementById("commuteDistance");
+
+    if (!fromLocation || !toLocation) {
+        console.error("Bitte sowohl Start- als auch Zieladresse eingeben.");
+        return;
+    }
+
+    try {
+        // API-Aufruf an den Backend-Controller
+        const response = await fetch(`/api/distanceApi/calculateDistance?fromLocation=${encodeURIComponent(fromLocation)}&toLocation=${encodeURIComponent(toLocation)}`);
+
+        if (!response.ok) {
+            console.error("Fehler bei der Anfrage:", response.status, response.statusText);
+            return;
+        }
+
+        const data = await response.json();
+        console.log("API Antwort:", data);
+
+        if (data.distance) {
+            commuteDistance.value = data.distance.toFixed(2);  // Distanz anzeigen
+            console.log("commuteD: ", commuteDistance);
+        }
+    } catch (error) {
+        console.error("Fehler bei der Berechnung der Distanz:", error);
+    }
+}
+
 
 // Diese Funktion wird aufgerufen, wenn sich die Getriebeart oder Kraftstofftyp ändert
 function handleTransmissionOrFuelChange() {
@@ -282,9 +337,6 @@ function toggleExternalNettoInput() {
     var taxClass = document.getElementById("taxClassComp");
     var churchTax = document.getElementById("churchTaxComp");
 
- 
-
-
     if (useExternalNetto === 'true') {
         externalNettoInput.style.display = "block";
         taxClass.style.display = "none";
@@ -293,6 +345,7 @@ function toggleExternalNettoInput() {
         newBruttoInput.style.display = "none";
         grossSalaryWithOutChurchTaxes.style.display = "none";
         calculatedNetto.style.display = "none";
+        
     } else {
         externalNettoInput.style.display = "none";
         oldBruttoInput.style.display = "block";
@@ -300,20 +353,38 @@ function toggleExternalNettoInput() {
         taxClass.style.display = "block";
         churchTax.style.display = "block";
         calculatedNetto.style.display = "table-row";
-       
+ 
+
     }
+    handleChurchCheckbox();
     
 }
 
 // Initialisiere die Anzeige beim Laden der Seite
 document.addEventListener("DOMContentLoaded", function () {
     toggleExternalNettoInput(); // Zeige/hide Felder abhängig vom initialen Radio-Button-Zustand
+    toggleDistanceFields();
 });
+//document.getElementById("calculateDistanceForm").addEventListener("submit", calculateDistance);
 
 // Event Listener hinzufügen
 document.querySelectorAll('input[name="useExternalNetto"]').forEach(function (radio) {
     radio.addEventListener('change', toggleExternalNettoInput);
 });
+
+document.querySelectorAll('input[name="autoCalculate"]').forEach(function (radio) {
+    radio.addEventListener('change', toggleDistanceFields);
+});
+
+
+//event listener für radios
+document.getElementById("falseRadio").addEventListener("change", toggleExternalNettoInput);
+document.getElementById("truthRadio").addEventListener("change", toggleExternalNettoInput);
+
+
+
+// Event Listener für die Church Tax Checkbox
+document.getElementById("churchTax").addEventListener("change", handleChurchCheckbox);
 
 
 
