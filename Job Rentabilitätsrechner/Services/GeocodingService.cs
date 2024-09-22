@@ -2,6 +2,7 @@
 using Job_Rentabilitätsrechner.Models;
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Newtonsoft.Json;
+using System.Net;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -17,6 +18,18 @@ namespace Job_Rentabilitätsrechner.Services
         {
             _httpClient = httpClient;
             _apiKey = configuration["OpenRouteServiceApiKey"];
+
+            //proxy config
+            
+            var proxy = new WebProxy("http://winproxy.server.lan:3128", true);
+            var handler = new HttpClientHandler
+            {
+                Proxy = proxy,
+                UseProxy = true
+            };
+
+            _httpClient = new HttpClient(handler);
+
         }
 
         public async Task<(double Longitude, double Latitude)?> GetCoordinatesAsync(string address)

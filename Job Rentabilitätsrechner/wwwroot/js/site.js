@@ -1,6 +1,4 @@
-﻿//import { auto } = require("@popperjs/core");
-
-function updateFuelPrice() {
+﻿function updateFuelPrice() {
     var fuelType = document.getElementById("fuelType").value;
     var fuelPriceField = document.getElementById("fuelPriceField");
     var fuelPriceLabel = document.getElementById("fuelPriceLabel");
@@ -37,42 +35,12 @@ function updateFuelPrice() {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-
- 
     //fuel price update
     var fuelTypeElement = document.getElementById("fuelType");
     if (fuelTypeElement) {
         fuelTypeElement.addEventListener("change", updateFuelPrice);
         updateFuelPrice();
     }
-    //soli checkbox handling
-    document.getElementById("salaryForm").addEventListener("input", function () {
-        var grossSalary = parseFloat(document.getElementById("grossSalary").value || 0);
-        var newGrossSalary = parseFloat(document.getElementById("newGrossSalary").value || 0);
-        var taxClass = parseInt(document.getElementById("taxClass").value, 10);
-
-        // Grenzen für 2024
-        var soliThreshold;
-        if (taxClass === 3 || taxClass === 4) {
-            soliThreshold = 136826;
-        }
-        else {
-            soliThreshold = 68413;
-        }
-
-        // aktivieren der Checkbox, wenn das Bruttoeinkommen über der Grenze liegt
-        if (grossSalary > soliThreshold || newGrossSalary > soliThreshold) {
-            document.getElementById("includeSoli").checked = true;
-            document.getElementById("includeSoli").disabled = true;
-            document.getElementById("soliContainer").style.display = "block";
-        } else {
-            document.getElementById("includeSoli").checked = false;
-            document.getElementById("includeSoli").disabled = false;
-            document.getElementById("soliContainer").style.display = "none";
-        }
-        
-    });
-
     //handling wear and tear
     var wearLevelContainer = document.getElementById("wearLevelContainer");
     var wearLevelInput = document.getElementById("wearLevel");
@@ -123,12 +91,41 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         }
     }
-
-
-
 });
 
+function checkSoli() {
+    var grossSalary = parseFloat(document.getElementById("grossSalary").value || 0);
+    var newGrossSalary = parseFloat(document.getElementById("newGrossSalary").value || 0);
+    var taxClass = parseInt(document.getElementById("taxClass").value, 10);
 
+    // Grenzen für 2024
+    var soliThreshold;
+    if (taxClass === 3 || taxClass === 4) {
+        soliThreshold = 136826;
+    }
+    else {
+        soliThreshold = 68413;
+    }
+
+    // aktivieren der Checkbox, wenn das Bruttoeinkommen über der Grenze liegt
+    if (grossSalary > soliThreshold || newGrossSalary > soliThreshold) {
+        document.getElementById("includeSoli").checked = true;
+        document.getElementById("includeSoli").disabled = true;
+        document.getElementById("soliContainer").style.display = "block";
+    } else {
+        document.getElementById("includeSoli").checked = false;
+        document.getElementById("includeSoli").disabled = false;
+        document.getElementById("soliContainer").style.display = "none";
+    }
+
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    checkSoli();
+});
+document.getElementById("salaryForm").addEventListener("input", function () {
+    checkSoli();
+});
 
 document.addEventListener("DOMContentLoaded", function () {
     updateFuelPrice();
@@ -206,7 +203,6 @@ function showInfoModal(modalId) {
     if (modal) {
         modal.style.display = "block";
     }
-    //document.getElementById("infoModal").style.display = "block";
 }
 
 function closeInfoModal(modalId) {
@@ -214,7 +210,6 @@ function closeInfoModal(modalId) {
     if (modal) {
         modal.style.display = "none";
     }
-    //document.getElementById("infoModal").style.display = "none";
 }
 
 // Diese Funktion versteckt das Modal, wenn sich die Getriebeart ändert
@@ -229,16 +224,25 @@ function hideModalOnChurchCheckbox() {
     var modal = document.getElementById('infoModalBundesland');
     if (modal) {
         modal.style.display = "none";
-        
     }
 }
 function hideModalOnWearAndTearCheckbox() {
     var modal = document.getElementById('infoWearAndTear');
     if (modal) {
         modal.style.display = "none";
-
     }
 }
+
+// Funktion, um den Erklärungstext basierend auf der Checkbox anzuzeigen oder zu verbergen
+document.getElementById("isSachsenCheckbox").addEventListener("change", function () {
+    var explanation = document.getElementById("sachsenExplanation");
+    if (this.checked) {
+        explanation.style.display = "block"; // Zeige den Text an
+    } else {
+        explanation.style.display = "none"; // Verstecke den Text
+    }
+});
+
 
 function handleChurchCheckbox() {
     var calculatedBruttoWithChurch = document.getElementById("calculatedGrossSalaryWithChurchTaxes");
@@ -267,29 +271,97 @@ function handleChurchCheckbox() {
     }
 }
 
-function toggleDistanceFields() {
-    var autoCalculate = document.querySelector('input[name="autoCalculate"]:checked').value;
+document.addEventListener("DOMContentLoaded", function () {
+    const calculateYes = document.getElementById("calculateYes");
+    const calculateNo = document.getElementById("calculateNo");
+    const distanceFields = document.getElementById("distanceFields");
     var fromLocation = document.getElementById("fromLocation");
     var toLocation = document.getElementById("toLocation");
-    var distanceFields = document.getElementById("distanceFields");
+    const commuteAutomatic = document.getElementById("commuteAutomatic");
+    const commuteManual = document.getElementById("commuteManual");
+    var commuteDistanceManual = document.getElementById("commuteDistanceManual");
+    var commuteDurationManual = document.getElementById("commuteDurationManual");
+    var commuteDurationAutomatically = document.getElementById("commuteDurationAutomatically");
+    var commuteDistance = document.getElementById("commuteDistance");
 
-    if (autoCalculate === "true") {
-        distanceFields.style.display = "block";
-    } else {
-        distanceFields.style.display = "none";
-        fromLocation.value = "";
-        toLocation.value = "";
+    // Funktion, um die Felder anzuzeigen oder auszublenden
+    function toggleDistanceFields() {
+        if (calculateYes.checked) {
+            distanceFields.style.display = "block";
+            commuteAutomatic.style.display = "block";
+            commuteManual.style.display = "none";
+            commuteDistanceManual.value = '';
+            commuteDurationManual.innerText = 'Durchschnittliche Fahrtdauer: 0 Minuten';
+            commuteDistance.disabled = true;
+            
+        } else {
+            distanceFields.style.display = "none";
+            commuteAutomatic.style.display = "none";
+            commuteManual.style.display = "block";
+            commuteDurationAutomatically.innerText = '0 Minuten';
+            commuteDistance.value = '';
+            fromLocation.value = '';
+            toLocation.value = '';
+            roundTripDistance.innerText = '0 Kilometer';
+
+            document.getElementById("commuteDistanceManual").addEventListener("input", updateCommuteDuration);
+        }
     }
-}
+
+    // Event-Listener für Radio-Buttons
+    calculateYes.addEventListener("change", toggleDistanceFields);
+    calculateNo.addEventListener("change", toggleDistanceFields);
+
+    // Initialer Aufruf zum Setzen des Zustands basierend auf dem aktuellen Radio-Button-Wert
+    toggleDistanceFields();
+});
+
+
+
 document.addEventListener("DOMContentLoaded", function () {
     handleChurchCheckbox();
     hideModalOnChurchCheckbox();
 });
 
+function convertMinutesToTime(minutes) {
+    var wholeMinutes = Math.floor(minutes);  // Ganze Minuten
+    var seconds = Math.round((minutes - wholeMinutes) * 60);  // Dezimal in Sekunden umwandeln
+    return `${wholeMinutes} Minuten und ${seconds} Sekunden`;
+}
+
+function updateCommuteDuration() {
+    var commuteDistance = parseFloat(document.getElementById("commuteDistanceManual").value); 
+    var commuteDuration = document.getElementById("commuteDurationManual");
+    var hiddenCommuteDuration = document.getElementById("hiddenCommuteDuration");
+
+    if (commuteDistance && commuteDistance > 0) {
+        var estimatedDuration = (commuteDistance / 50) * 60;  // Beispiel: 50 km/h Durchschnittsgeschwindigkeit
+        var formattedTime = convertMinutesToTime(estimatedDuration);
+        commuteDuration.innerText = `Durchschnittliche Fahrtdauer (basierend auf 50 km/h): ${formattedTime}`;
+
+        hiddenCommuteDuration.value = estimatedDuration.toFixed(2);
+        
+    } else {
+        commuteDuration.innerText = `Durchschnittliche Fahrdauer: 0 Minuten`;
+    }
+}
+
+var loadingInterval;
+
 async function calculateDistance() {
     var fromLocation = document.getElementById("fromLocation").value;
     var toLocation = document.getElementById("toLocation").value;
     var commuteDistance = document.getElementById("commuteDistance");
+    var commuteDuration = document.getElementById("commuteDuration");
+    var commuteDistanceField = document.getElementById("hiddenCommuteDistance");
+    var hiddenCommuteDuration = document.getElementById("hiddenCommuteDuration");
+    var hiddenCommuteDurationSeconds = document.getElementById("hiddenCommuteDurationSeconds");
+    var loadingText = document.getElementById("loadingText");
+    var hiddenFullCommuteDistance = document.getElementById("hiddenFullCommuteDistance");
+    var roundTripDistance = document.getElementById("roundTripDistance");
+
+
+    
 
     if (!fromLocation || !toLocation) {
         console.error("Bitte sowohl Start- als auch Zieladresse eingeben.");
@@ -297,7 +369,8 @@ async function calculateDistance() {
     }
 
     try {
-        // API-Aufruf an den Backend-Controller
+        loadingText.style.display = "flex";
+        startLoadingAnimation();
         const response = await fetch(`/api/distanceApi/calculateDistance?fromLocation=${encodeURIComponent(fromLocation)}&toLocation=${encodeURIComponent(toLocation)}`);
 
         if (!response.ok) {
@@ -306,25 +379,54 @@ async function calculateDistance() {
         }
 
         const data = await response.json();
-        console.log("API Antwort:", data);
+
 
         if (data.distance) {
-            commuteDistance.value = data.distance.toFixed(2);  // Distanz anzeigen
-            console.log("commuteD: ", commuteDistance);
+            commuteDistance.value = data.distance.toFixed(2);  // Distanz anzeigen   
+            hiddenFullCommuteDistance.value = data.distance.toFixed(2) * 2;
+            roundTripDistance.innerText = `${hiddenFullCommuteDistance.value} Kilometer`
+
+        } else {
+            console.log("Keine Distanze gefunden");
+        }
+
+        if (data.duration) {
+            commuteDuration.innerText = `Durchschnittliche Fahrdauer: ${data.duration} Minuten und ${data.durationSeconds} Sekunden`;
+            commuteDuration.style.display = "block";
+            commuteDistanceField.value = data.distance.toFixed(2);
+            hiddenCommuteDuration.value = data.duration;
+            hiddenCommuteDurationSeconds.value = data.durationSeconds;
+
+        } else {
+            console.log("Keine Dauer gefunden");
         }
     } catch (error) {
         console.error("Fehler bei der Berechnung der Distanz:", error);
+    } finally {
+        loadingText.style.display = "none";
+        stopLoadingAnimation();
     }
 }
 
+function startLoadingAnimation() {
+    var loadingText = document.getElementById("loadingText");
+    var dots = 0;
+    loadingInterval = setInterval(function ()
+    {
+        dots = (dots + 1) % 4;
+        var dotText = ".".repeat(dots);
+        loadingText.textContent = `Berechne Strecke und Dauer, bitte warten${dotText}`;
+    }, 500);
+}
+
+function stopLoadingAnimation() {
+    clearInterval(loadingInterval);
+}
 
 // Diese Funktion wird aufgerufen, wenn sich die Getriebeart oder Kraftstofftyp ändert
 function handleTransmissionOrFuelChange() {
     hideModalOnGearChange();
-    // Weitere Logik, um Felder abhängig von der Auswahl ein- oder auszublenden
 }
-
-
 
 function toggleExternalNettoInput() {
     var useExternalNetto = document.querySelector('input[name="useExternalNetto"]:checked').value;
@@ -353,7 +455,6 @@ function toggleExternalNettoInput() {
         taxClass.style.display = "block";
         churchTax.style.display = "block";
         calculatedNetto.style.display = "table-row";
- 
 
     }
     handleChurchCheckbox();
@@ -362,31 +463,23 @@ function toggleExternalNettoInput() {
 
 // Initialisiere die Anzeige beim Laden der Seite
 document.addEventListener("DOMContentLoaded", function () {
-    toggleExternalNettoInput(); // Zeige/hide Felder abhängig vom initialen Radio-Button-Zustand
+    toggleExternalNettoInput(); // Zeige/hide Felder abhängig vom initialen Radio-Button-Zustand 
     toggleDistanceFields();
 });
-//document.getElementById("calculateDistanceForm").addEventListener("submit", calculateDistance);
 
+
+//document.getElementById("calculateDistanceForm").addEventListener("submit", calculateDistance);
 // Event Listener hinzufügen
 document.querySelectorAll('input[name="useExternalNetto"]').forEach(function (radio) {
     radio.addEventListener('change', toggleExternalNettoInput);
 });
 
-document.querySelectorAll('input[name="autoCalculate"]').forEach(function (radio) {
-    radio.addEventListener('change', toggleDistanceFields);
-});
-
-
 //event listener für radios
 document.getElementById("falseRadio").addEventListener("change", toggleExternalNettoInput);
 document.getElementById("truthRadio").addEventListener("change", toggleExternalNettoInput);
 
-
-
 // Event Listener für die Church Tax Checkbox
 document.getElementById("churchTax").addEventListener("change", handleChurchCheckbox);
-
-
 
 function clearPlaceholder(input) {
     if (input.value === "0" || input.value === "0.00") {
@@ -394,13 +487,9 @@ function clearPlaceholder(input) {
     }
 }
 
-
 // Event Listener 
 document.getElementById('transmissionTypeField').addEventListener('change', handleTransmissionOrFuelChange);
 document.getElementById('fuelType').addEventListener('change', handleTransmissionOrFuelChange);
 
 document.getElementById('churchTax').addEventListener('change', handleChurchCheckbox);
 document.getElementById('bundesland').addEventListener('change', hideModalOnChurchCheckbox);
-
-
-

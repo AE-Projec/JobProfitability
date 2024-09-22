@@ -5,16 +5,21 @@ namespace Job_Rentabilitätsrechner.Pages
 {
     public class NetSalaryCalculationService : INetSalaryCalculationService
     {
-        public float CalculateNetSalary(float grossSalary, int taxClass, bool churchTax, float kirchensteuerRate)
+        public float CalculateNetSalary(float grossSalary, int taxClass, bool churchTax, float kirchensteuerRate, bool isSachsen)
         {
             float lohnsteuer = CalculateLohnsteuer(grossSalary, taxClass);
             float solidaritätszuschlag = lohnsteuer * 0.055f;
+
             float kirchensteuerbetrag = churchTax ? lohnsteuer * kirchensteuerRate : 0f;
 
             float rentenversicherung = grossSalary * 0.093f; //9,3 % für Rentenversicherung
+
             float krankenversicherung = grossSalary * 0.073f; // 7,3% für Krankenversicherung
-            float pflegeversicherung = grossSalary * 0.01525f; // 1,525% für Pflegeversicherung
-            float arbeitslosenversicherung = grossSalary * 0.012f; // 1,2% für Arbeitslosenversicherung
+
+            // pflegerversicherung abhängig ob sachsen oder nicht: 1,525% nicht sachsen. 2.205% sachsen
+            float pflegeversicherung =  isSachsen?  grossSalary * 0.02025f : grossSalary * 0.01525f;
+
+            float arbeitslosenversicherung = grossSalary * 0.013f; // 1,3% für Arbeitslosenversicherung
 
             float netto = grossSalary - (lohnsteuer + kirchensteuerbetrag +
                                           rentenversicherung + krankenversicherung +
@@ -23,9 +28,9 @@ namespace Job_Rentabilitätsrechner.Pages
             return netto;
         }
 
-        public float CalculateNewNetSalary(float newGrossSalary, int taxClass, bool churchTax, float churchTaxRate)
+        public float CalculateNewNetSalary(float newGrossSalary, int taxClass, bool churchTax, float churchTaxRate, bool isSachsen)
         {
-            return CalculateNetSalary(newGrossSalary, taxClass, churchTax, churchTaxRate);
+            return CalculateNetSalary(newGrossSalary, taxClass, churchTax, churchTaxRate, isSachsen);
         }
 
         public float CalculateChurchTaxRate(bool churchTax, string state)
@@ -55,7 +60,7 @@ namespace Job_Rentabilitätsrechner.Pages
         }
 
         public void CalculateNetSalaries(float grossSalary, float newGrossSalary, int taxClass, bool churchTax, float churchTaxRate,
-            bool useExternalNetto, float? externalNetSalary, out float netSalary, out float newNetSalary)
+            bool useExternalNetto,bool isSachsen, float? externalNetSalary, out float netSalary, out float newNetSalary)
         {
             if (useExternalNetto && externalNetSalary.HasValue && externalNetSalary > 0)
             {
@@ -65,10 +70,10 @@ namespace Job_Rentabilitätsrechner.Pages
             }
             else
             {
-                netSalary = CalculateNetSalary(grossSalary, taxClass, churchTax, churchTaxRate);
+                netSalary = CalculateNetSalary(grossSalary, taxClass, churchTax, churchTaxRate,isSachsen);
             }
 
-            newNetSalary = CalculateNetSalary(newGrossSalary, taxClass, churchTax, churchTaxRate);
+            newNetSalary = CalculateNetSalary(newGrossSalary, taxClass, churchTax, churchTaxRate,isSachsen);
         }
 
         public bool ShouldApplySoli(float grossSalary, int taxClass)

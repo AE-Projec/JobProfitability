@@ -3,10 +3,10 @@
     public interface INetSalaryCalculationService
     {
         // Berechnet das Nettogehalt
-        float CalculateNetSalary(float grossSalary, int taxClass, bool churchTax, float kirchensteuerRate);
+        float CalculateNetSalary(float grossSalary, int taxClass, bool churchTax, float kirchensteuerRate, bool isSachsen);
 
         // Berechnet das neue Nettogehalt
-        float CalculateNewNetSalary(float newGrossSalary, int taxClass, bool churchTax, float churchTaxRate);
+        float CalculateNewNetSalary(float newGrossSalary, int taxClass, bool churchTax, float churchTaxRate, bool isSachsen);
 
         // Berechnet die Kirchensteuerrate
         float CalculateChurchTaxRate(bool churchTax, string state);
@@ -16,7 +16,7 @@
 
         // Berechnet Nettogehälter
         void CalculateNetSalaries(float grossSalary, float newGrossSalary, int taxClass, bool churchTax, float churchTaxRate,
-            bool useExternalNetto, float? externalNetSalary, out float netSalary, out float newNetSalary);
+            bool useExternalNetto,bool isSachsen ,float? externalNetSalary, out float netSalary, out float newNetSalary);
 
         // Überprüft, ob der Solidaritätszuschlag angewendet wird
         bool ShouldApplySoli(float grossSalary, int taxClass);

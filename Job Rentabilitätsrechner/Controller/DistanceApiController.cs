@@ -16,16 +16,19 @@ namespace Job_Rentabilitätsrechner.Controller
         private readonly string _apiKey;
         private readonly IGeocodingService _geocodingService;
         private readonly IDistanceService _distanceService;
+
         private readonly ILogger<DistanceApiController> _logger;
 
         public DistanceApiController(HttpClient httpClient, IConfiguration configuration,
-            IGeocodingService geocodingService, IDistanceService distanceService, 
+            IGeocodingService geocodingService, IDistanceService distanceService,
+
             ILogger<DistanceApiController> logger)
         {
             _httpClient = httpClient;
             _apiKey = configuration["OpenRouteServiceApiKey"]; // API-Key aus appsettings.json laden
             _geocodingService = geocodingService;
             _distanceService = distanceService;
+
             _logger = logger;
         }
 
@@ -54,6 +57,7 @@ namespace Job_Rentabilitätsrechner.Controller
 
                 // 3. Distanz zwischen den beiden Koordinaten berechnen
                 var distance = await _distanceService.GetDistanceAsync(fromCoords.Value, toCoords.Value);
+                var duration = await _distanceService.GetDurationAsync(fromCoords.Value, toCoords.Value);
                 if (distance == null)
                 {
                     _logger.LogError("Fehler bei der Berechnung der Distanz zwischen {FromLocation} und {ToLocation}.", fromLocation, toLocation);
@@ -61,7 +65,8 @@ namespace Job_Rentabilitätsrechner.Controller
                 }
 
                 _logger.LogInformation("Die berechnete Distanz zwischen {FromLocation} und {ToLocation} beträgt {Distance} km", fromLocation, toLocation, distance);
-                return Ok(new { Distance = distance });
+                _logger.LogInformation("Die berechnete Duration zwischen {FromLocation} und {ToLocation} beträgt {duration.Duration} min und {duration.DurationSeconds} in sekunden", fromLocation, toLocation, duration.Duration, duration.DurationSeconds);
+                return Ok(new { Distance = distance, duration.Duration, duration.DurationSeconds });
             }
             catch (HttpRequestException ex)
             {
@@ -76,4 +81,3 @@ namespace Job_Rentabilitätsrechner.Controller
         }
     }
 }
-    

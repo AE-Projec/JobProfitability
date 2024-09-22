@@ -18,6 +18,7 @@ namespace Job_Rentabilitätsrechner.Interfaces
             float newGrossSalary,
             int taxClass,
             bool churchTax,
+            bool isSachsen,
             float kirchensteuerRate,
             out float commuteCost,
             out float commuteCostYear,
@@ -28,6 +29,8 @@ namespace Job_Rentabilitätsrechner.Interfaces
             out float adjustedNetSalary,
             out float salaryDifference,
             out float adjustedSalary,
-            out float totalAnnualCost);
+            out float totalAnnualCost,
+            out float monthlyAdjustedNetYearSalary
+            );
     }
 }

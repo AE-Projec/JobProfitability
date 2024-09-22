@@ -1,6 +1,6 @@
 ﻿namespace Job_Rentabilitätsrechner.Models
 {
-       public class GeocodeResult
+    public class GeocodeResult
     {
         public GeocodeFeature[] features { get; set; }  // Umbenannt zu GeocodeFeature
     }
