@@ -2,7 +2,7 @@
 {
     public class GeocodeResult
     {
-        public GeocodeFeature[] features { get; set; }  // Umbenannt zu GeocodeFeature
+        public GeocodeFeature[] features { get; set; } 
     }
 
     public class GeocodeFeature

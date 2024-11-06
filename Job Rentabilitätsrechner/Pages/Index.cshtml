@@ -1,32 +1,36 @@
 ﻿@page "/"
 @model IndexModel
 @{
-    
+    ViewData["Title"] = "Schnelle Berechnung deines Jobs | Job Rentabilitätsrechner";
     Layout = "~/Pages/Shared/_Layout.cshtml";
 }
-<meta name="description" content="Berechnen Sie Ihre Pendelkosten und die Rentabilität eines Jobwechsels schnell und einfach. Nutzen Sie unseren individuell anpassbaren Rechner für präzise Ergebnisse.">
+@section MetaTags{
+    <meta name="description" content="Berechnen Sie schnell und einfach Ihre Jobkosten mit unserem Job Rentabilitätsrechner. Starten Sie jetzt und optimieren Sie Ihre Karriereplanung!">
+}
+<br />
 <div class="hero-section text-center">
-    <h1>Willkommen beim Job-Rentabilitätsrechner</h1>
+    <h1 class="welcome-title">Willkommen beim Job-Rentabilitätsrechner</h1>
     <p>Berechnen Sie ganz einfach, ob sich ein Jobwechsel für Sie lohnt.</p>
+    <br />
     <a href="~/Calculate" class="btn btn-primary btn-lg">Jetzt starten</a>
 </div>
 
 <div class="container mt-5">
     <div class="row">
         <div class="col-md-4 text-center">
-            <i class="fas fa-calculator fa-3x"></i>
+            <i class="fas fa-calculator fa-3x icon-spacing"></i>
             <h3>Präzise Brutto-Netto-Berechnung</h3>
             <p>Berücksichtigen Sie alle Abzüge wie Steuern, Kirchensteuer, Solidaritätszuschlag und mehr. <strong>Alternativ</strong> können Sie auch Ihr bereits bekanntes Netto-Gehalt eingeben, um schnell zu Ergebnissen zu kommen.</p>
         </div>
         <div class="col-md-4 text-center">
-            <i class="fas fa-balance-scale fa-3x"></i>
+            <i class="fas fa-balance-scale fa-3x icon-spacing"></i>
             <h3>Berücksichtigung aller Kosten</h3>
             <p>Wir erfassen umfassend alle Kosten, von den täglichen Pendelkosten bis hin zur langfristigen Fahrzeugabnutzung.<br />
                 <strong>Alles wird präzise berechnet</strong>, damit Sie eine klare und vollständige Übersicht Ihrer tatsächlichen Ausgaben erhalten.</p>
 
         </div>
         <div class="col-md-4 text-center">
-            <i class="fas fa-cogs fa-3x"></i>
+            <i class="fas fa-cogs fa-3x icon-spacing"></i>
             <h3>Individuelle Anpassungen</h3>
             <p>Passen Sie die Berechnungen exakt an Ihre persönlichen Bedürfnisse an.<br />
                 <strong>Optimieren Sie Ihre Eingaben</strong> und erhalten Sie maßgeschneiderte Ergebnisse, die Ihre individuelle Situation genau widerspiegeln.</p>

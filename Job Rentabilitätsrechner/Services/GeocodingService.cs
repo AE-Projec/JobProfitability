@@ -21,7 +21,7 @@ namespace Job_Rentabilitätsrechner.Services
 
             //proxy config
             
-            var proxy = new WebProxy("http://winproxy.server.lan:3128", true);
+            var proxy = new WebProxy("your Proxy here", true);
             var handler = new HttpClientHandler
             {
                 Proxy = proxy,

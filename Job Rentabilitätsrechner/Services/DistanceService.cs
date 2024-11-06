@@ -22,10 +22,10 @@ namespace Job_Rentabilitätsrechner.Services
             _httpClient = httpClient;
             _apiKey = configuration["OpenRouteServiceApiKey"];  // Hole API-Key aus appsettings.json
             _logger = logger;
-
+            
             //proxy config
-           
-            var proxy = new WebProxy("http://winproxy.server.lan:3128", true);
+            
+            var proxy = new WebProxy("your Proxy here", true);
             var handler = new HttpClientHandler
             {
                 Proxy = proxy,
@@ -39,7 +39,7 @@ namespace Job_Rentabilitätsrechner.Services
         {
             var url = $"https://api.openrouteservice.org/v2/directions/driving-car?api_key={_apiKey}&start={fromCoords.Longitude.ToString(CultureInfo.InvariantCulture)},{fromCoords.Latitude.ToString(CultureInfo.InvariantCulture)}&end={toCoords.Longitude.ToString(CultureInfo.InvariantCulture)},{toCoords.Latitude.ToString(CultureInfo.InvariantCulture)}";
             var response = await _httpClient.GetStringAsync(url);
-            _logger.LogError("API Response: " + response);
+            //_logger.LogError("API Response: " + response);
 
             var distanceResult = JsonConvert.DeserializeObject<DistanceResult>(response);
 
@@ -50,26 +50,68 @@ namespace Job_Rentabilitätsrechner.Services
             }
             else
             {
-                _logger.LogError("Die Antwort enthält keine Routen.");
                 return null;
             }
 
 
         }
-
         public async Task<RouteInfo?> GetDurationAsync((double Longitude, double Latitude) fromCoords, (double Longitude, double Latitude) toCoords)
         {
             var url = $"https://api.openrouteservice.org/v2/directions/driving-car?api_key={_apiKey}&start={fromCoords.Longitude.ToString(CultureInfo.InvariantCulture)},{fromCoords.Latitude.ToString(CultureInfo.InvariantCulture)}&end={toCoords.Longitude.ToString(CultureInfo.InvariantCulture)},{toCoords.Latitude.ToString(CultureInfo.InvariantCulture)}";
             var response = await _httpClient.GetStringAsync(url);
-            _logger.LogError("API Response: " + response);
 
             var distanceResult = JsonConvert.DeserializeObject<DistanceResult>(response);
 
             if (distanceResult?.features != null && distanceResult.features.Length > 0)
             {
+                var segment = distanceResult.features[0].properties.segments[0];
+                var durationInMinutes = segment.duration / 60.0;
+                var durationSeconds = segment.duration % 60;
 
-                var durationInMinutes = distanceResult.features[0].properties.segments[0].duration / 60.0;
-                var durationSeconds = distanceResult.features[0].properties.segments[0].duration % 60;
+                var routeInfo = new RouteInfo
+                {
+                    Duration = (int)durationInMinutes,
+                    DurationSeconds = (int)durationSeconds
+                };
+
+                // Hier kannst du überprüfen, ob `OldDuration` und `OldDurationSeconds` ebenfalls verfügbar sind,
+                // falls sie aus `distanceResult` extrahierbar sind:
+                if (distanceResult.features.Length > 1) // Beispiel: Überprüfung auf andere Daten
+                {
+                    var oldSegment = distanceResult.features[1].properties.segments[0]; // Fiktive Extraktion
+                    var oldDurationInMinutes = oldSegment.duration / 60.0;
+                    var oldDurationSeconds = oldSegment.duration % 60;
+
+                    routeInfo.OldDuration = (int)oldDurationInMinutes;
+                    routeInfo.OldDurationSeconds = (int)oldDurationSeconds;
+                }
+
+                return routeInfo;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+
+
+
+        /*
+        public async Task<RouteInfo?> GetDurationAsync((double Longitude, double Latitude) fromCoords, (double Longitude, double Latitude) toCoords)
+        {
+            var url = $"https://api.openrouteservice.org/v2/directions/driving-car?api_key={_apiKey}&start={fromCoords.Longitude.ToString(CultureInfo.InvariantCulture)},{fromCoords.Latitude.ToString(CultureInfo.InvariantCulture)}&end={toCoords.Longitude.ToString(CultureInfo.InvariantCulture)},{toCoords.Latitude.ToString(CultureInfo.InvariantCulture)}";
+            var response = await _httpClient.GetStringAsync(url);
+
+            var distanceResult = JsonConvert.DeserializeObject<DistanceResult>(response);
+
+            if (distanceResult?.features != null && distanceResult.features.Length > 0)
+            {
+                var segment = distanceResult.features[0].properties.segments[0];
+
+                var durationInMinutes = segment.duration / 60.0;
+                var durationSeconds = segment.duration % 60;
+
                 return new RouteInfo
                 {
                     Duration = (int)durationInMinutes,
@@ -78,9 +120,8 @@ namespace Job_Rentabilitätsrechner.Services
             }
             else
             {
-                _logger.LogError("Die Antwort enthält keine Routen.");
                 return null;
             }
-        }
+        }*/
     }
 }

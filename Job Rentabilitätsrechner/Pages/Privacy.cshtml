@@ -1,17 +1,18 @@
-﻿@page
+﻿@page "/privacy"
 @model PrivacyModel
 @{
-
+    ViewData["Title"] = "Datenschutzerklärung | Job Rentabilitätsrechner";
     Layout = "~/Pages/Shared/_Layout.cshtml";
 }
-<head>
-
-</head>
-<h1>@ViewData["Title"]</h1>
+@section MetaTags {
+    <meta name="description" content="Erfahren Sie, wie der Job Rentabilitätsrechner Ihre Daten schützt und verwendet. Lesen Sie unsere Datenschutzerklärung für detaillierte Informationen" />
+}
 <br />
-<h3>Datenschutzerklärung </h3>
+<div id="privacy-policy">
+<h2><b>Datenschutzerklärung </b></h2>
+</div>
 <br />
-<ul>
+<ul class="privacy-policy-list">
     <li>
         <h5> 1. Verantwortlicher:</h5>
         Diese Webseite wird betrieben von Adrian Eschberger,
@@ -19,7 +20,7 @@
         Bei Fragen zum Datenschutz kannst du uns unter jobrentabilitaet@gmail.com erreichen.
         <br /><b>Bitte beachten sie, dass wir keine personenbezogenen Daten speichern oder verarbeiten.</b>
     </li>
-    <br />
+   
     <li>
         <h5>2. Hosting: </h5>
         Unsere Webseite wird bei IONOS gehostet.<br />
@@ -29,14 +30,14 @@
         Da wir jedoch keine personenbezogenen Daten erheben oder speichern, 
         betrifft dies hauptsächlich den Schutz der Webseite selbst.
     </li>
-    <br />
+    
     <li>
         <h5>3. Keine Speicherung personenbezogener Daten:</h5> 
         Unsere Webseite speichert keine personenbezogenen Daten.<br />
         Alle Eingaben, die du auf unserer Webseite machst (z. B. zur Berechnung von Gehaltsdifferenzen),
         werden ausschließlich für die Dauer deiner Sitzung verwendet und nicht dauerhaft gespeichert.
     </li>
-    <br />
+    
     <li>
         <h5>4. Keine Nutzung von Cookies oder Tracking-Tools:</h5>
         Wir verwenden keine Cookies, Tracking-Tools oder andere Technologien, 
@@ -44,7 +45,7 @@
         Dein Besuch auf unserer Webseite bleibt anonym, und es werden keine Daten gesammelt, 
         die Rückschlüsse auf deine Person zulassen.
     </li>
-    <br />
+    
     <li>
         <h5>5. Berechnungen und Datenverarbeitung: </h5>
         Die auf der Webseite durchgeführten Berechnungen basieren auf den von dir eingegebenen Daten
@@ -52,7 +53,7 @@
         Diese Daten werden ausschließlich für die Berechnung verwendet und nach Verlassen der Seite 
         oder Schließen des Browsers nicht weiter gespeichert oder verarbeitet.
     </li>
-    <br />
+   
     <li>
         <h5>6. Sicherheit: </h5>
         Wir treffen technische und organisatorische Maßnahmen,
@@ -61,21 +62,21 @@
         Da jedoch keine personenbezogenen Daten erhoben werden,
         betreffen diese Maßnahmen hauptsächlich den allgemeinen Schutz der Webseite.
     </li>
-    <br />
+   
     <li>
         <h5>7. Keine personenbezogene Kommunikation:</h5>
         Unsere Webseite bietet keine Möglichkeiten zur direkten Kommunikation oder Kontaktaufnahme, 
         die personenbezogene Daten erfordern würden (z. B. Kontaktformulare, Newsletter-Anmeldungen).<br />
         Es werden keine E-Mail-Adressen oder andere persönliche Informationen gesammelt oder gespeichert.
     </li>
-    <br />
+   
     <li>
         <h5>8. Keine Rechte auf Auskunft, Berichtigung oder Löschung: </h5>
         Da auf unserer Webseite keine personenbezogenen Daten gespeichert oder verarbeitet werden, 
         entfallen auch die Rechte auf Auskunft, Berichtigung, Löschung oder Einschränkung der Verarbeitung
         solcher Daten.
     </li>
-    <br />
+    
     <li>
         <h5>9. Änderungen dieser Datenschutzerklärung: </h5>
         Wir behalten uns das Recht vor, diese Datenschutzerklärung jederzeit zu ändern, 

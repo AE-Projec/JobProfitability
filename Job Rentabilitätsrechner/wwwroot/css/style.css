@@ -10,6 +10,8 @@
 .form-header {
     text-align: center;
     margin-bottom: 20px;
+    font-size:25px;
+    font-weight:bold;
 }
 
 .form-group label {
@@ -131,3 +133,158 @@ select:focus {
         margin-bottom: 0; /* Verhindert zusätzlichen Abstand unter der Tabelle */
     }
 
+
+h1, h2, h3, h4 {
+    font-size: 1.2rem; /* Kleiner, subtiler */
+    font-weight: 400; /* Normale Schriftstärke */
+    margin-bottom: 15px; /* Schöner Abstand zu den Inhalten */
+    color: #444; /* Eine weiche, graue Farbe statt Schwarz */
+}
+
+h4 {
+    border-bottom: 1px solid #eaeaea; /* Leichte Unterstreichung als Trennlinie */
+    padding-bottom: 10px;
+}
+
+.faq-section h3, .donate-section h3 {
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 10px;
+    font-weight:bold;
+    
+    
+    
+}
+.faq-section h3 {
+    text-align: center;
+    font-size: x-large;
+}
+
+/*SUPPORT TAB CARD FAQ */
+/* Card soll als Ganzes anklickbar sein */
+.card-header {
+    cursor: pointer;
+    padding: 15px;
+    background-color: #f9f9f9;
+    border: none;
+    transition: background-color 0.3s ease;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+    .card-header:hover {
+        background-color: #eaeaea;
+    }
+
+.card-body {
+    padding: 15px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+/* Icons für offene/geschlossene Antworten */
+.btn-link {
+    font-weight: 600;
+    color: #007bff;
+    width: 100%;
+    text-decoration: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+    .btn-link::after {
+
+        font-size: 20px;
+        transition: transform 0.3s ease;
+    }
+
+    .btn-link.collapsed::after {
+        
+        font-size: 20px;
+    }
+
+.card-link {
+    text-decoration: none;
+    color: inherit;
+}
+
+/* Abstände zwischen den Cards */
+.card + .card {
+    margin-top: 10px;
+}
+
+/* Für mobile Geräte */
+@media (max-width: 768px) {
+    .card-header, .card-body {
+        padding: 10px;
+    }
+}
+
+/* Subtile Schatten und runde Ecken */
+.card {
+    border: none;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    border-radius: 10px;
+}
+
+.privacy-policy-list{
+    list-style-type:none;
+    padding:0;
+}
+    .privacy-policy-list li {
+        margin-bottom: 20px;
+    }
+    .privacy-policy-list h5 {
+        margin-bottom: 8px;
+        font-weight: bold;
+    }
+
+    .privacy-policy-list a {
+        color: #007bff;
+        text-decoration: underline;
+    }
+
+    .privacy-policy-list b {
+        display: block;
+        margin-top: 8px;
+        font-weight: bold;
+    }
+
+#privacy-policy h2{
+    font-size:25px;
+}
+
+.welcome-title{
+    font-size:25px;
+    font-weight:bold;
+}
+.icon-spacing{
+    margin-bottom:20px;
+}
+.logoText{
+    color:black;
+    margin-right:15px;
+    margin-left:-15px;
+}
+.required{
+    color: red;
+    font-weight:bold;
+}
+
+/*TEST */
+
+.oldRoute {
+    border: 1px solid;
+    padding: 10px;
+    border-radius: 5px;
+   
+}
+
+.newRoute {
+    border: 1px solid;
+    padding: 10px;
+    border-radius: 5px;
+    
+}

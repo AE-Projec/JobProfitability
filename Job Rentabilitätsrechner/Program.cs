@@ -16,6 +16,14 @@ builder.Services.AddScoped<IGeocodingService, GeocodingService>();
 builder.Services.AddScoped<IDistanceService, DistanceService>();
 builder.Services.AddScoped<IFuelConsumptionAdjustment, FuelConsumptionAdjustmentService>();
 
+builder.Services.AddWebOptimizer(pipeline =>
+{
+    pipeline.AddCssBundle("/css/bundle.css", "css/*.css").UseContentRoot();
+    pipeline.AddJavaScriptBundle("/js/bundle.js", "js/*.js").UseContentRoot();
+});
+
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -26,6 +34,8 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+
+app.UseWebOptimizer();
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 

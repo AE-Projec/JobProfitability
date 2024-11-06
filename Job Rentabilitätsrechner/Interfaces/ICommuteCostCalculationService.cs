@@ -7,6 +7,7 @@ namespace Job_Rentabilitätsrechner.Interfaces
         float CalculateCommuteCosts(float fuelPrice, float fuelConsumption, float commuteDistance, int averageCommuteDays);
         float CalculateWearAndTearCosts(float commuteDistance, int averageCommuteDays, int wearLevel, bool includeWearAndTear);
 
+        //neuer job
         void CalculateCommuteAndTotalCosts(
            float parsedFuelPrice,
             float adjustedFuelConsumption,
@@ -14,7 +15,6 @@ namespace Job_Rentabilitätsrechner.Interfaces
             int averageCommuteDays,
             int wearLevel,
             bool includeWearAndTear,
-            float grossSalary,
             float newGrossSalary,
             int taxClass,
             bool churchTax,
@@ -27,10 +27,32 @@ namespace Job_Rentabilitätsrechner.Interfaces
             out float totalCostWearAndTear,
             out float wearAndTearYear,
             out float adjustedNetSalary,
-            out float salaryDifference,
             out float adjustedSalary,
-            out float totalAnnualCost,
-            out float monthlyAdjustedNetYearSalary
+            out float totalAnnualCost
+            );
+        
+        //alter job
+        void OldCalculateCommuteAndTotalCosts(
+           float oldParsedFuelPrice,
+            float oldAdjustedFuelConsumption,
+            float oldCommuteDistance,
+            int oldAverageCommuteDays,
+            int oldWearLevel,
+            bool oldIncludeWearAndTear,
+            float oldGrossSalary,
+            int oldTaxClass,
+            bool oldChurchTax,
+            bool oldIsSachsen,
+            float oldKirchensteuerRate,
+            out float oldCommuteCost,
+            out float oldCommuteCostYear,
+            out float oldTotalCost,
+            out float oldMonthlyWearAndTear,
+            out float oldTotalCostWearAndTear,
+            out float oldWearAndTearYear,
+            out float oldAdjustedNetSalary,
+            out float oldAdjustedSalary,
+            out float oldTotalAnnualCost
             );
     }
 }

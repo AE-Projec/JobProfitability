@@ -17,7 +17,7 @@ namespace Job_Rentabilitätsrechner.Pages
             float krankenversicherung = grossSalary * 0.073f; // 7,3% für Krankenversicherung
 
             // pflegerversicherung abhängig ob sachsen oder nicht: 1,525% nicht sachsen. 2.205% sachsen
-            float pflegeversicherung =  isSachsen?  grossSalary * 0.02025f : grossSalary * 0.01525f;
+            float pflegeversicherung = isSachsen ? grossSalary * 0.02025f : grossSalary * 0.01525f;
 
             float arbeitslosenversicherung = grossSalary * 0.013f; // 1,3% für Arbeitslosenversicherung
 
@@ -60,20 +60,41 @@ namespace Job_Rentabilitätsrechner.Pages
         }
 
         public void CalculateNetSalaries(float grossSalary, float newGrossSalary, int taxClass, bool churchTax, float churchTaxRate,
-            bool useExternalNetto,bool isSachsen, float? externalNetSalary, out float netSalary, out float newNetSalary)
+            bool useExternalNetto, bool isSachsen, float? externalOldNetSalary, float? externalNewNetSalary, out float netSalary, out float newNetSalary)
         {
-            if (useExternalNetto && externalNetSalary.HasValue && externalNetSalary > 0)
+            // Berechnung für altes Netto basierend auf externer Eingabe
+            if (useExternalNetto)
             {
-                netSalary = externalNetSalary.Value;
-                float soli = CalculateSoliForExternalNetto(netSalary, taxClass);
-                netSalary -= soli;
+                netSalary = CalculateNetSalaryWithExternalInput(externalOldNetSalary, taxClass);
+                newNetSalary = CalculateNetSalaryWithExternalInput(externalNewNetSalary, taxClass);
             }
             else
             {
-                netSalary = CalculateNetSalary(grossSalary, taxClass, churchTax, churchTaxRate,isSachsen);
+                netSalary = CalculateNetSalary(grossSalary, taxClass, churchTax, churchTaxRate, isSachsen);
+                newNetSalary = CalculateNetSalary(newGrossSalary, taxClass, churchTax, churchTaxRate, isSachsen);
+            }
+        }
+        public float AdjustNetSalaryForSachsen(float externalNetSalary, bool isSachsen)
+        {
+            if(isSachsen)
+            {
+                float sachsenPflegeversicherung = externalNetSalary * 0.02025f;
+                return externalNetSalary - sachsenPflegeversicherung;
+            }
+            return externalNetSalary;
+        }
+
+            private float CalculateNetSalaryWithExternalInput(float? externalNetSalary, int taxClass)
+        {
+            if (externalNetSalary.HasValue && externalNetSalary > 0)
+            {
+                float netSalary = externalNetSalary.Value;
+                float soli = CalculateSoliForExternalNetto(netSalary, taxClass);
+                return netSalary - soli;
             }
 
-            newNetSalary = CalculateNetSalary(newGrossSalary, taxClass, churchTax, churchTaxRate,isSachsen);
+            // Fallback-Wert oder Exception, falls kein externer Netto-Wert vorhanden
+            return 0;
         }
 
         public bool ShouldApplySoli(float grossSalary, int taxClass)

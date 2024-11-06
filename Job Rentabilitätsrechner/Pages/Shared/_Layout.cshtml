@@ -2,17 +2,19 @@
 <html lang="en">
 <head>
     
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] Job Rentabilitätsrechner</title>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] </title>
+    @RenderSection("MetaTags", required: false)
+    @RenderSection("JsonLD",required:false)
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="~/css/style.css?v=1.0"/>
-    <link rel="icon" href="~/img/favicon_webpage_logo.png" type="image/png" />
+    <link rel="icon" href="~/img/favicon_webpage_logo.png" type="image/png" style="height:40px; margin-right:10px" loading="lazy"/>
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Der Job-Rentabilitätsrechner hilft dir, dein Nettogehalt zu berechnen, Pendelstrecken, Abnutzungskosten, Kirchensteuer, Solidaritätszuschlag und mehr zu berücksichtigen. Ideal für die Planung deines Jobwechsels.">
+    <meta name="description" content="Berechne schnell und einfach dein Nettogehalt, inklusive Pendelstrecken, Abnutzungskosten und Kirchensteuer. Ideal für deine Jobwechselplanung.">
     <meta name="keywords" content="Job-Rentabilitätsrechner, Brutto-Netto-Rechner, Pendelkosten berechnen, Abnutzungskosten, Kirchensteuer, Solidaritätszuschlag, Steuerklasse, Nettogehalt berechnen, Jobwechsel, Fahrtkosten">
     <meta name="author" content="Adrian Eschberger">
 
@@ -21,7 +23,7 @@
     <meta property="og:description" content="Der Job-Rentabilitätsrechner hilft dir, dein Nettogehalt zu berechnen, Pendelstrecken, Abnutzungskosten, Kirchensteuer, Solidaritätszuschlag und mehr zu berücksichtigen. Ideal für die Planung deines Jobwechsels.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://jobrentabilitaet.info/">
-    <meta property="og:image" content="https://jobrentabilitaet.info/img/logo_social.png">
+    <meta property="og:image" content="https://jobrentabilitaet.info/img/logo_social.webp">
     <meta property="og:site_name" content="Job Rentabilitätsrechner">
     <!-- Optionale Größe -->
     <meta property="og:image:width" content="70">
@@ -33,9 +35,9 @@
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container">
                 <a class="navbar-brand">
-                    <img src="~/img/favicon_webpage_logo.png" alt="Job Rentabilitätsrechner Logo" style="height: 40px; margin-right: 10px;" />
-                    Job Rentabilitätsrechner
+                    <img src="@Url.Content("~/img/favicon_webpage_logo.png")" alt="Job Rentabilitätsrechner Logo" style="height: 40px; margin-right: 10px;" loading="lazy" />
                 </a>
+                <div class="logoText"> Job Rentabilitätsrechner</div>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -50,6 +52,9 @@
                         </li>
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-page="/Privacy">Datenschutz</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-page="/Support">Support</a> 
                         </li>
 
                     </ul>
@@ -70,10 +75,11 @@
     </footer>
 
 
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+ 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>
